@@ -11,6 +11,11 @@
 
 using namespace std;
 
+typedef struct Packet{
+    unsigned char* data;
+    int dataLength;
+};
+
 class botSocket
 {
     int PACKET_SIZE = 65535;
@@ -20,6 +25,7 @@ class botSocket
         bool DebugMode;
         struct sockaddr_ll addr;
         int interfaceIndex;
+        Packet * packet;
 
         void getInterfaceIndex(char * interface);
 
@@ -27,10 +33,11 @@ class botSocket
 
         void createSocket();
 
+        void setSocketOptions();
+
         void bindSocket();
 
     public:
-        unsigned char * packet;
         int packetLen;
 
         botSocket(char * intName, int debugMode);
@@ -38,6 +45,8 @@ class botSocket
         botSocket();
         
         ~botSocket();
+
+        Packet * getPacket();
 
         void recieve();
 
