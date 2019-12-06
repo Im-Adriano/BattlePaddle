@@ -1,0 +1,3 @@
+/home/adriano/C++_Adventures/testing_stuff/build/CMakeFiles/rebuild_cache.dir
+/home/adriano/C++_Adventures/testing_stuff/build/CMakeFiles/main.dir
+/home/adriano/C++_Adventures/testing_stuff/build/CMakeFiles/edit_cache.dir

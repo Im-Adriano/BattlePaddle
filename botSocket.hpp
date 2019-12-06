@@ -27,7 +27,7 @@ class botSocket
         int interfaceIndex;
         Packet * packet;
 
-        void getInterfaceIndex(char * interface);
+        void getInterfaceIndex(const char * interface);
 
         void createAddressStruct();
 
@@ -40,7 +40,7 @@ class botSocket
     public:
         int packetLen;
 
-        botSocket(char * intName, int debugMode);
+        botSocket(const char * intName, int debugMode);
 
         botSocket();
         

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void botSocket::getInterfaceIndex(char * interface){
+void botSocket::getInterfaceIndex(const char * interface){
     struct ifreq ifr = {0};
     memcpy(ifr.ifr_name, interface, strlen(interface));
     if(ioctl(sockFd, SIOCGIFINDEX, &ifr) != 0){
@@ -47,7 +47,7 @@ botSocket::~botSocket(){
     delete packet;
 }
 
-botSocket::botSocket(char * intName, int debugMode): DebugMode(debugMode){
+botSocket::botSocket(const char * intName, int debugMode): DebugMode(debugMode){
     packet = new Packet();
     packet->data = new unsigned char [PACKET_SIZE];
     createSocket();
