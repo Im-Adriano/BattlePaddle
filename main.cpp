@@ -1,7 +1,6 @@
 #include "botSocket.hpp"
 #include <csignal>
 #include <vector>
-#include "testing.hpp"
 using namespace std;
 
 vector<botSocket *> socks;
@@ -38,6 +37,16 @@ int main(){
         }
     }
     #elif defined(OS_Windows)
-    test();
+    socks.push_back(new botSocket(true));
+    for (;;) {
+        for (auto sock : socks) {
+            sock->recieve();
+            Packet* meep = new Packet;
+            string d = "HERE IS SOME TOTALLY REAL TRAFFIC";
+            meep->data = (unsigned char*)d.c_str();
+            meep->dataLength = d.size();
+            sock->send(meep);
+        }
+    }
     #endif
 }

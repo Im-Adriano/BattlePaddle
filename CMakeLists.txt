@@ -13,7 +13,7 @@ add_executable(main ${SRC})
 if (WIN32)
     find_library(WINDIVERT_LIB WinDivert WinDivert)
     
-    target_link_libraries(main wsock32 ws2_32 ${WINDIVERT_LIB})
+    target_link_libraries(main ${WINDIVERT_LIB})
     add_custom_command(TARGET main POST_BUILD        # Adds a post-build event to MyTest
     COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
         "${PROJECT_SOURCE_DIR}/WinDivert/WinDivert.dll"      # <--this is in-file

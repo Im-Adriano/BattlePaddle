@@ -2,6 +2,9 @@
 
 using namespace std;
 #ifdef __unix__
+struct sockaddr_ll addr;
+int interfaceIndex;
+int sockFd;
 
 void botSocket::getInterfaceIndex(const char* inter) {
     struct ifreq ifr = {0};
@@ -93,97 +96,70 @@ void botSocket::send(Packet* dataframe) {
 }
 
 #elif defined(OS_Windows)
-WSADATA wsaData;
-int iResult;
-struct sockaddr_in dest;
-char hostname[100];
-struct hostent* local;
-struct in_addr adr;
-int in;
+//#define MAXBUF              WINDIVERT_MTU_MAX
+//#define INET6_ADDRSTRLEN    45
+HANDLE handle, console;
+INT16 priority = 0;
+WINDIVERT_ADDRESS address;
+const char* err_str;
+//LARGE_INTEGER base, freq;
 
-void botSocket::getInterfaceIndex(const char* inter) {
-    gethostname(hostname, sizeof(hostname));
-    local = gethostbyname(hostname);
-    for (int i = 0; local->h_addr_list[i] != 0; ++i)
+void setup() {
+    // Get console for pretty colors.
+    console = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Divert traffic matching the filter: ALL
+    handle = WinDivertOpen("true", WINDIVERT_LAYER_NETWORK, priority, 0);
+    if (handle == INVALID_HANDLE_VALUE)
     {
-        memcpy(&adr, local->h_addr_list[i], sizeof(struct in_addr));
-        cout << "Interface Number : " << i << " Address : " << inet_ntoa(adr) << endl;
-    }
-}
-
-void botSocket::createSocket() {
-    sockFd = socket(AF_INET, SOCK_RAW, IPPROTO_IP);
-    if (sockFd == INVALID_SOCKET) {
-        perror("socket failed with error: "+ WSAGetLastError());
-        WSACleanup();
-        exit(-1);
-    }
-}
-
-void botSocket::setSocketOptions() {
-    DWORD timeout = 10;
-    setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof timeout);
-    /*DWORD inn = RCVALL_ON;
-    DWORD out = 0;
-    WSAIoctl(sockFd, SIO_RCVALL, &inn, sizeof(inn), NULL, 0, &out, NULL, NULL);
-    int v = 0;
-    v = 0xffffffff & ~(1 << 4) & ~(1 << 5);
-    setsockopt(sockFd, 263, 18, (const char*)&v, sizeof(v));*/
-
-    //Enable this socket with the power to sniff : SIO_RCVALL is the key Receive ALL ;)
-    int j = 1;
-    int meep = 1;
-    DWORD optval = 1;
-    printf("\nSetting socket to sniff...");
-    if (WSAIoctl(sockFd, SIO_RCVALL, &j, sizeof(j), 0, 0, (LPDWORD)&meep, 0, 0) == SOCKET_ERROR)
-    {
-        printf("WSAIoctl() failed.\n");
-        wprintf(L"IOCTL failed with error %d\n", WSAGetLastError());
-        if (WSAIoctl(sockFd, SIO_RCVALL, &j, sizeof(j), 0, 0, (LPDWORD)&meep, 0, 0) == SOCKET_ERROR) {
-            printf("Failed again\n");
-            wprintf(L"IOCTL failed again with error %d\n", WSAGetLastError());
-            exit(-1);
+        if (GetLastError() == ERROR_INVALID_PARAMETER &&
+            !WinDivertHelperCompileFilter("true", WINDIVERT_LAYER_NETWORK,
+                NULL, 0, &err_str, NULL))
+        {
+            fprintf(stderr, "error: invalid filter \"%s\"\n", err_str);
+            exit(EXIT_FAILURE);
         }
+        fprintf(stderr, "error: failed to open the WinDivert device (%d)\n",
+            GetLastError());
+        exit(EXIT_FAILURE);
     }
-    printf("Socket set.");
-    /*printf("\nSetting the socket in RAW mode...");
-    if (setsockopt(sockFd, IPPROTO_IP, IP_HDRINCL, (char*)&optval, sizeof(optval)) == SOCKET_ERROR)
+    //Don't know if this is needed but I will leave it here in case it is in the future. Same with stuff commented out above.
+    /*
+    // Max-out the packet queue:
+    if (!WinDivertSetParam(handle, WINDIVERT_PARAM_QUEUE_LENGTH,
+        WINDIVERT_PARAM_QUEUE_LENGTH_MAX))
     {
-        printf("failed to set socket in raw mode.");
-        exit(-1);
-    }*/
-}
+        fprintf(stderr, "error: failed to set packet queue length (%d)\n",
+            GetLastError());
+        exit(EXIT_FAILURE);
+    }
+    if (!WinDivertSetParam(handle, WINDIVERT_PARAM_QUEUE_TIME,
+        WINDIVERT_PARAM_QUEUE_TIME_MAX))
+    {
+        fprintf(stderr, "error: failed to set packet queue time (%d)\n",
+            GetLastError());
+        exit(EXIT_FAILURE);
+    }
+    if (!WinDivertSetParam(handle, WINDIVERT_PARAM_QUEUE_SIZE,
+        WINDIVERT_PARAM_QUEUE_SIZE_MAX))
+    {
+        fprintf(stderr, "error: failed to set packet queue size (%d)\n",
+            GetLastError());
+        exit(EXIT_FAILURE);
+    }
 
-void botSocket::bindSocket() {
-    memset(&dest, 0, sizeof(dest));
-    cout << "Enter the interface number you would like to sniff : " << endl;
-    int notused = scanf("%d", &in);
-    memcpy(&dest.sin_addr.s_addr, local->h_addr_list[in], sizeof(dest.sin_addr.s_addr));
-    dest.sin_family = AF_INET;
-    dest.sin_port = 0;
-    bind(sockFd, (struct sockaddr*) &dest, sizeof(dest));
+    // Set up timing:
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&base);*/
 }
 
 botSocket::~botSocket() {
     delete packet;
 }
 
-void setupWSA() {
-    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (iResult != 0) {
-        perror("WSAStartup failed with error: " + iResult);
-        exit(-1);
-    }
-}
-
-botSocket::botSocket(const char* intName, int debugMode) : DebugMode(debugMode) {
+botSocket::botSocket(int debugMode) : DebugMode(debugMode) {
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
-    setupWSA();
-    getInterfaceIndex(intName);
-    createSocket();
-    bindSocket();
-    setSocketOptions();
+    setup();
 }
 
 botSocket::botSocket() = default;
@@ -193,26 +169,26 @@ Packet* botSocket::getPacket() {
 }
 
 void botSocket::recieve() {
-    packet->dataLength = recv(sockFd, (char *)packet->data, PACKET_SIZE, 0);
-    if (packet->dataLength < 0) {
-        if (WSAGetLastError() != WSAETIMEDOUT){
-            perror("Error in reading received packet: ");
-            exit(-1);
-        }
+    if (!WinDivertRecv(handle, packet->data, PACKET_SIZE, (UINT *)(&packet->dataLength), &address))
+    {
+        fprintf(stderr, "warning: failed to read packet (%d)\n",
+            GetLastError());
     }
-
-    if (DebugMode) {
-        cout << "From socket: " << sockFd << endl;
-        for (int i = 0; i < packet->dataLength; i++) {
-            cout << hex << (int)packet->data[i] << " ";
+    else {
+        if (DebugMode) {
+            SetConsoleTextAttribute(console,
+                FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE);
+            cout << "RAW BYTES" << endl;
+            for (int i = 0; i < packet->dataLength; i++) {
+                cout << hex << (int)packet->data[i] << " ";
+            }
+            cout << endl;
         }
-        cout << endl;
-
     }
 }
 
-void botSocket::send(void* dataframe) {
-
+void botSocket::send(Packet * dataframe) {
+    cout << "Sending currently not supported for Windows" << endl;
 }
 #endif
 
