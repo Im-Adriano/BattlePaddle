@@ -10,6 +10,8 @@ BattlePaddle is a C2 bot with some extra functionality
 - [ ] Investigate Raw sockets on windows
   - [X] ~~winsock~~
   - [ ] WinDivert
+    - [X] Receiving Packets
+    - [ ] Sending Packets
 - [X] Design BP protocol
 - [ ] Create Linux relay bot
   - [ ] Setup structs to parse raw socket packets
