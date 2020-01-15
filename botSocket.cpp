@@ -3,8 +3,8 @@
 using namespace std;
 #ifdef __unix__
 void botSocket::getInterfaceIndex(const char* inter) {
-    struct ifreq ifr = { 0 };
-    memcpy(ifr.ifr_name, interface, strlen(interface));
+    struct ifreq ifr = {0};
+    memcpy(ifr.ifr_name, inter, strlen(inter));
     if (ioctl(sockFd, SIOCGIFINDEX, &ifr) != 0) {
         perror("Interface Index Failure:");
         exit(-1);
@@ -13,7 +13,7 @@ void botSocket::getInterfaceIndex(const char* inter) {
 }
 
 void botSocket::createAddressStruct() {
-    addr = { 0 };
+    addr = {0};
     addr.sll_family = PF_PACKET;
     addr.sll_protocol = htons(ETH_P_ALL);
     addr.sll_ifindex = interfaceIndex;
@@ -43,6 +43,7 @@ botSocket::~botSocket() {
 }
 
 botSocket::botSocket(const char* intName, int debugMode) : DebugMode(debugMode) {
+    cout << intName << endl;
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
     createSocket();

@@ -18,13 +18,14 @@ int main(){
     signal(SIGINT, cleanup);
     int in = 0;
     #ifdef __unix__
-    cout << "Enter the number of sockets to make: " << endl;
-    int notused = scanf("%d", &in);
+    cout << "Enter the number of sockets to make: " ;
+    cin >> in;
+    cin.ignore();
     for (in; in > 0; in--) {
-        char input[50];
-        cout << "Enter interface name" << endl;
-        cin.getline(input, sizeof(input));
-        socks.push_back(new botSocket(input, true));
+        string input;
+        cout << "Enter interface name: ";
+        getline(cin, input);
+        socks.push_back(new botSocket(input.c_str(), true));
     }
     for(;;){
         for(auto sock: socks){

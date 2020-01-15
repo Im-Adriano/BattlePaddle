@@ -27,10 +27,10 @@
 
 using namespace std;
 
-typedef struct Packet{
+typedef struct {
     unsigned char* data;
     int dataLength;
-};
+}Packet;
 
 class botSocket
 {
@@ -39,7 +39,7 @@ class botSocket
     private:
         int sockFd;
         bool DebugMode;
-        struct sockaddr_ll* addr;
+        struct sockaddr_ll addr;
         int interfaceIndex;
         Packet * packet;
 

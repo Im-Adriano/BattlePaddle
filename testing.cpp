@@ -1,3 +1,4 @@
+#ifdef OS_Windows
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -212,3 +213,4 @@ void test()
             FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);*/
     }
 }
+#endif
