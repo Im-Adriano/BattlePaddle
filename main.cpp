@@ -37,6 +37,7 @@ int main(){
             meep->data= (unsigned char*)d.c_str();
             meep->dataLength = d.size();
             sock->send(meep);
+            delete meep;
         }
     }
 }
