@@ -1,4 +1,5 @@
-#include <thread>
+
+/*#include <thread>
 #include "sockThread.hpp"
 
 sockThread::sockThread(){
@@ -6,4 +7,4 @@ sockThread::sockThread(){
 }
 thread sockThread::start(){
 
-}
+}*/

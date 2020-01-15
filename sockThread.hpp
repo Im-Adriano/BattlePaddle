@@ -1,4 +1,4 @@
-#include <thread>
+/*#include <thread>
 #include "botSocket.hpp"
 
 enum SockFlow{
@@ -15,4 +15,4 @@ class sockThread{
         int direciton;
         botSocket socket;
 
-};
+};*/
