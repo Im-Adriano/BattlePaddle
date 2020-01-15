@@ -46,7 +46,7 @@ RawSocket::~RawSocket() {
     delete packet;
 }
 
-RawSocket::RawSocket(const char* intName, int debugMode) : DebugMode(debugMode) {
+RawSocket::RawSocket(const char* intName, int debug) : debugMode(debug) {
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
     createSocket();
@@ -70,7 +70,7 @@ void RawSocket::recieve(){
             exit(-1);
         }
     }else{
-        if (DebugMode) {
+        if (debugMode) {
             cout << "From socket: " << sockFd << endl;
             for( int i = 0; i < packet->dataLength; i++ ){
                 cout << hex << int(packet->data[i]) << " ";
@@ -86,7 +86,7 @@ void RawSocket::send(Packet* dataframe) {
     socket_address.sll_halen = ETH_ALEN;
 
     if(dataframe->dataLength < 14){
-        if(DebugMode){
+        if(debugMode){
             cout << "Packet must be atleast 14 bytes long" << endl;
         }
     }else if (sendto(sockFd, dataframe->data, dataframe->dataLength, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
@@ -156,7 +156,7 @@ RawSocket::~RawSocket() {
     delete packet;
 }
 
-RawSocket::RawSocket(int debugMode) : DebugMode(debugMode) {
+RawSocket::RawSocket(int debug) : debugMode(debug) {
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
     setup();
@@ -175,7 +175,7 @@ void RawSocket::recieve() {
             GetLastError());
     }
     else {
-        if (DebugMode) {
+        if (debugMode) {
             SetConsoleTextAttribute(console,
                 FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE);
             cout << "RAW BYTES" << endl;
@@ -188,7 +188,9 @@ void RawSocket::recieve() {
 }
 
 void RawSocket::send(Packet * dataframe) {
-    cout << "Sending currently not supported for Windows" << endl;
+    if (debugMode) {
+        cout << "Sending currently not supported for Windows" << endl;
+    }
 }
 #endif
 

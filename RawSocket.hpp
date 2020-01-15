@@ -32,13 +32,13 @@ class RawSocket
 
     private:
         Packet * packet;
-        bool DebugMode;
+        bool debugMode;
   
     public:
         #ifdef __unix__
         RawSocket(const char* intName, int debugMode);
         #elif defined(OS_Windows)
-        RawSocket(int debugMode);
+        RawSocket(int debug);
         #endif
 
         RawSocket();
