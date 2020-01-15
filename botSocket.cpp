@@ -43,7 +43,6 @@ botSocket::~botSocket() {
 }
 
 botSocket::botSocket(const char* intName, int debugMode) : DebugMode(debugMode) {
-    cout << intName << endl;
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
     createSocket();
