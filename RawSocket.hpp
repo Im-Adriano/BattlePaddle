@@ -26,7 +26,7 @@ typedef struct {
     int dataLength;
 }Packet;
 
-class botSocket
+class RawSocket
 {
     int PACKET_SIZE = 65535;
 
@@ -36,14 +36,14 @@ class botSocket
   
     public:
         #ifdef __unix__
-        botSocket(const char* intName, int debugMode);
+        RawSocket(const char* intName, int debugMode);
         #elif defined(OS_Windows)
-        botSocket(int debugMode);
+        RawSocket(int debugMode);
         #endif
 
-        botSocket();
+        RawSocket();
         
-        ~botSocket();
+        ~RawSocket();
 
         Packet * getPacket();
 

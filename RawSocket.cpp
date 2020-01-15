@@ -1,4 +1,4 @@
-#include "botSocket.hpp"
+#include "RawSocket.hpp"
 
 using namespace std;
 #ifdef __unix__
@@ -6,7 +6,7 @@ struct sockaddr_ll addr;
 int interfaceIndex;
 int sockFd;
 
-void botSocket::getInterfaceIndex(const char* inter) {
+void RawSocket::getInterfaceIndex(const char* inter) {
     struct ifreq ifr = {0};
     memcpy(ifr.ifr_name, inter, strlen(inter));
     if (ioctl(sockFd, SIOCGIFINDEX, &ifr) != 0) {
@@ -16,14 +16,14 @@ void botSocket::getInterfaceIndex(const char* inter) {
     interfaceIndex = ifr.ifr_ifindex;
 }
 
-void botSocket::createAddressStruct() {
+void RawSocket::createAddressStruct() {
     addr = {0};
     addr.sll_family = PF_PACKET;
     addr.sll_protocol = htons(ETH_P_ALL);
     addr.sll_ifindex = interfaceIndex;
 }
 
-void botSocket::createSocket() {
+void RawSocket::createSocket() {
     sockFd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sockFd < 0) {
         perror("Socket failed to create: ");
@@ -31,22 +31,22 @@ void botSocket::createSocket() {
     }
 }
 
-void botSocket::setSocketOptions() {
+void RawSocket::setSocketOptions() {
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 100;
     setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 }
 
-void botSocket::bindSocket() {
+void RawSocket::bindSocket() {
     bind(sockFd, (struct sockaddr*) & addr, sizeof(addr));
 }
 
-botSocket::~botSocket() {
+RawSocket::~RawSocket() {
     delete packet;
 }
 
-botSocket::botSocket(const char* intName, int debugMode) : DebugMode(debugMode) {
+RawSocket::RawSocket(const char* intName, int debugMode) : DebugMode(debugMode) {
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
     createSocket();
@@ -56,13 +56,13 @@ botSocket::botSocket(const char* intName, int debugMode) : DebugMode(debugMode) 
     bindSocket();
 }
 
-botSocket::botSocket() = default;
+RawSocket::RawSocket() = default;
 
-Packet* botSocket::getPacket() {
+Packet* RawSocket::getPacket() {
     return packet;
 }
 
-void botSocket::recieve(){
+void RawSocket::recieve(){
     packet->dataLength = recv(sockFd, packet->data, PACKET_SIZE, 0);
     if(packet->dataLength < 0){
         if ((errno != EAGAIN) && (errno != EWOULDBLOCK)){
@@ -80,7 +80,7 @@ void botSocket::recieve(){
     }
 }
 
-void botSocket::send(Packet* dataframe) {
+void RawSocket::send(Packet* dataframe) {
     struct sockaddr_ll socket_address;
     socket_address.sll_ifindex = interfaceIndex;
     socket_address.sll_halen = ETH_ALEN;
@@ -152,23 +152,23 @@ void setup() {
     QueryPerformanceCounter(&base);*/
 }
 
-botSocket::~botSocket() {
+RawSocket::~RawSocket() {
     delete packet;
 }
 
-botSocket::botSocket(int debugMode) : DebugMode(debugMode) {
+RawSocket::RawSocket(int debugMode) : DebugMode(debugMode) {
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
     setup();
 }
 
-botSocket::botSocket() = default;
+RawSocket::RawSocket() = default;
 
-Packet* botSocket::getPacket() {
+Packet* RawSocket::getPacket() {
     return packet;
 }
 
-void botSocket::recieve() {
+void RawSocket::recieve() {
     if (!WinDivertRecv(handle, packet->data, PACKET_SIZE, (UINT *)(&packet->dataLength), &address))
     {
         fprintf(stderr, "warning: failed to read packet (%d)\n",
@@ -187,7 +187,7 @@ void botSocket::recieve() {
     }
 }
 
-void botSocket::send(Packet * dataframe) {
+void RawSocket::send(Packet * dataframe) {
     cout << "Sending currently not supported for Windows" << endl;
 }
 #endif
