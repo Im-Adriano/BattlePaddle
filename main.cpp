@@ -16,8 +16,8 @@ void cleanup(int i){
 
 int main(){
     signal(SIGINT, cleanup);
-    int in = 0;
     #ifdef __unix__
+    int in = 0;
     cout << "Enter the number of sockets to make: " ;
     cin >> in;
     cin.ignore();
@@ -30,6 +30,11 @@ int main(){
     for(;;){
         for(auto sock: socks){
             sock->recieve();
+            Packet * meep = new Packet;
+            string d = "HERE IS SOME TOTALLY REAL TRAFFIC";
+            meep->data= (unsigned char*)d.c_str();
+            meep->dataLength = d.size();
+            sock->send(meep);
         }
     }
     #elif defined(OS_Windows)

@@ -2,6 +2,7 @@
 
 using namespace std;
 #ifdef __unix__
+
 void botSocket::getInterfaceIndex(const char* inter) {
     struct ifreq ifr = {0};
     memcpy(ifr.ifr_name, inter, strlen(inter));
@@ -61,24 +62,34 @@ Packet* botSocket::getPacket() {
 void botSocket::recieve(){
     packet->dataLength = recv(sockFd, packet->data, PACKET_SIZE, 0);
     if(packet->dataLength < 0){
-        //LINUX
         if ((errno != EAGAIN) && (errno != EWOULDBLOCK)){
             perror("Error in reading received packet: ");
             exit(-1);
         }
-    }
-
-    if (DebugMode) {
-        cout << "From socket: " << sockFd << endl;
-        for( int i = 0; i < packet->dataLength; i++ ){
-            cout << hex << int(packet->data[i]) << " ";
+    }else{
+        if (DebugMode) {
+            cout << "From socket: " << sockFd << endl;
+            for( int i = 0; i < packet->dataLength; i++ ){
+                cout << hex << int(packet->data[i]) << " ";
+            }
+            cout << endl;
         }
-        cout << endl;
     }
 }
 
-void botSocket::send(void* dataframe) {
+void botSocket::send(Packet* dataframe) {
+    struct sockaddr_ll socket_address;
+    socket_address.sll_ifindex = interfaceIndex;
+    socket_address.sll_halen = ETH_ALEN;
 
+    if(dataframe->dataLength < 14){
+        if(DebugMode){
+            cout << "Packet must be atleast 14 bytes long" << endl;
+        }
+    }else if (sendto(sockFd, dataframe->data, dataframe->dataLength, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
+        perror("Send failed\n");
+    }
+    
 }
 
 #elif defined(OS_Windows)

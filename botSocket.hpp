@@ -64,5 +64,5 @@ class botSocket
 
         void recieve();
 
-        void send(void * dataframe);
+        void send(Packet * dataframe);
 };
