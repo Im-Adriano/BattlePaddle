@@ -58,10 +58,11 @@ Packet* botSocket::getPacket() {
     return packet;
 }
 
-void botSocket::recieve() {
-    packetLen = recv(sockFd, packet->data, PACKET_SIZE, 0);
-    if (packetLen < 0) {
-        if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
+void botSocket::recieve(){
+    packet->dataLength = recv(sockFd, packet->data, PACKET_SIZE, 0);
+    if(packet->dataLength < 0){
+        //LINUX
+        if ((errno != EAGAIN) && (errno != EWOULDBLOCK)){
             perror("Error in reading received packet: ");
             exit(-1);
         }
@@ -69,7 +70,7 @@ void botSocket::recieve() {
 
     if (DebugMode) {
         cout << "From socket: " << sockFd << endl;
-        for (int i = 0; i < packetLen; i++) {
+        for( int i = 0; i < packet->dataLength; i++ ){
             cout << hex << int(packet->data[i]) << " ";
         }
         cout << endl;

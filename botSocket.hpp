@@ -54,8 +54,6 @@ class botSocket
         void bindSocket();
 
     public:
-        int packetLen;
-
         botSocket(const char * intName, int debugMode);
 
         botSocket();
