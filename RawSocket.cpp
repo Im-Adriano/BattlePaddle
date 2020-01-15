@@ -6,7 +6,7 @@ struct sockaddr_ll addr;
 int interfaceIndex;
 int sockFd;
 
-void RawSocket::getInterfaceIndex(const char* inter) {
+void getInterfaceIndex(const char* inter) {
     struct ifreq ifr = {0};
     memcpy(ifr.ifr_name, inter, strlen(inter));
     if (ioctl(sockFd, SIOCGIFINDEX, &ifr) != 0) {
@@ -16,14 +16,14 @@ void RawSocket::getInterfaceIndex(const char* inter) {
     interfaceIndex = ifr.ifr_ifindex;
 }
 
-void RawSocket::createAddressStruct() {
+void createAddressStruct() {
     addr = {0};
     addr.sll_family = PF_PACKET;
     addr.sll_protocol = htons(ETH_P_ALL);
     addr.sll_ifindex = interfaceIndex;
 }
 
-void RawSocket::createSocket() {
+void createSocket() {
     sockFd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sockFd < 0) {
         perror("Socket failed to create: ");
@@ -31,14 +31,14 @@ void RawSocket::createSocket() {
     }
 }
 
-void RawSocket::setSocketOptions() {
+void setSocketOptions() {
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 100;
     setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 }
 
-void RawSocket::bindSocket() {
+void bindSocket() {
     bind(sockFd, (struct sockaddr*) & addr, sizeof(addr));
 }
 
