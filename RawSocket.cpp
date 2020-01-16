@@ -36,11 +36,17 @@ void setSocketOptions() {
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 100;
-    setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+    if(setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0){
+        perror("Setting socket options failed:");
+        exit(-1);
+    }
 }
 
 void bindSocket() {
-    bind(sockFd, (struct sockaddr*) & addr, sizeof(addr));
+    if(bind(sockFd, (struct sockaddr*) & addr, sizeof(addr)) < 0){
+        perror("Binding to socket failed:");
+        exit(-1);
+    }
 }
 
 void findOutwardFacingNIC(const char * destination_address){
