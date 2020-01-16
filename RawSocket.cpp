@@ -1,6 +1,7 @@
 #include "RawSocket.hpp"
 
 using namespace std;
+
 #ifdef __unix__
 struct sockaddr_ll addr;
 int interfaceIndex;
@@ -26,7 +27,7 @@ void createAddressStruct() {
 void createSocket() {
     sockFd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sockFd < 0) {
-        perror("Socket failed to create: ");
+        perror("Socket failed to create:");
         exit(-1);
     }
 }
@@ -42,15 +43,60 @@ void bindSocket() {
     bind(sockFd, (struct sockaddr*) & addr, sizeof(addr));
 }
 
+void findOutwardFacingNIC(const char * destination_address){
+    sockaddr_storage addrOut = { 0 };
+    unsigned long addrDest = inet_addr( destination_address );
+    ( ( struct sockaddr_in * ) &addrOut)->sin_addr.s_addr = addrDest;
+    ( ( struct sockaddr_in * ) &addrOut)->sin_family = AF_INET;
+    ( ( struct sockaddr_in * ) &addrOut)->sin_port = htons( 9 );
+
+    int handle = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+    if (handle < 0) {
+        perror("Socket failed to create:");
+        exit(-1);
+    }
+    socklen_t addrLen = sizeof(addrOut);
+    if(connect( handle, (sockaddr*)&addrOut, addrLen) != 0){
+        perror("Connecting failed:");
+        exit(-1);
+    }
+    if(getsockname(handle, (sockaddr*)&addrOut, &addrLen) != 0){
+        perror("Get socket name failed:");
+        exit(-1);
+    }
+    char* source_address = inet_ntoa(((struct sockaddr_in *)&addrOut)->sin_addr);
+    struct ifaddrs* ifaddr;
+    struct ifaddrs* ifa;
+    getifaddrs(&ifaddr);
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next){
+        if (ifa->ifa_addr){
+            if (AF_INET == ifa->ifa_addr->sa_family){
+                struct sockaddr_in* inaddr = (struct sockaddr_in*)ifa->ifa_addr;
+                if (inaddr->sin_addr.s_addr == ((struct sockaddr_in *)&addrOut)->sin_addr.s_addr){
+                    if (ifa->ifa_name){
+                        cout << "Using interface " << ifa->ifa_name << " to bind to. Interface uses IP: " << source_address << endl;
+                        getInterfaceIndex(ifa->ifa_name);
+                    }
+                }
+            }
+        }
+    }
+    freeifaddrs(ifaddr);
+}
+
 RawSocket::~RawSocket() {
     delete packet;
 }
 
-RawSocket::RawSocket(const char* intName, int debug) : debugMode(debug) {
+RawSocket::RawSocket(const char* intNameOrIP, int debug, bool isIP /* =false */) : debugMode(debug) {
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
     createSocket();
-    getInterfaceIndex(intName);
+    if(isIP){
+        findOutwardFacingNIC(intNameOrIP);
+    }else{
+        getInterfaceIndex(intNameOrIP);
+    }
     createAddressStruct();
     setSocketOptions();
     bindSocket();
@@ -66,7 +112,7 @@ void RawSocket::recieve(){
     packet->dataLength = recv(sockFd, packet->data, PACKET_SIZE, 0);
     if(packet->dataLength < 0){
         if ((errno != EAGAIN) && (errno != EWOULDBLOCK)){
-            perror("Error in reading received packet: ");
+            perror("Error in reading received packet:");
             exit(-1);
         }
     }else{

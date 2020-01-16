@@ -9,6 +9,7 @@
 #include <sys/ioctl.h>
 #include <netpacket/packet.h>	
 #include <mutex>
+#include <ifaddrs.h>
 #elif defined(_WIN32) || defined(WIN32) 
 #include <iostream>
 #include <string.h>
@@ -36,7 +37,7 @@ class RawSocket
   
     public:
         #ifdef __unix__
-        RawSocket(const char* intName, int debugMode);
+        RawSocket(const char* intNameOrIP, int debug, bool isIP=false);
         #elif defined(OS_Windows)
         RawSocket(int debug);
         #endif
