@@ -37,7 +37,7 @@ class RawSocket
   
     public:
         #ifdef __unix__
-        RawSocket(const char* intNameOrIP, int debug, bool isIP=false);
+        RawSocket(const char* intNameOrIP, bool debug, bool isIP=false);
         #elif defined(OS_Windows)
         RawSocket(int debug);
         #endif

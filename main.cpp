@@ -3,6 +3,13 @@
 #include <vector>
 using namespace std;
 
+/*
+**************************************************************************
+THIS IS FOR TESING OF THE RAWSOCKET LIBRARY NOT AN ACTUAL USEFUL PROGRAM.
+**************************************************************************
+*/
+
+
 vector<RawSocket *> socks;
 
 void cleanup(int i){
@@ -43,3 +50,10 @@ int main(){
         }
     }
 }
+
+
+/*
+**************************************************************************
+THIS IS FOR TESING OF THE RAWSOCKET LIBRARY NOT AN ACTUAL USEFUL PROGRAM.
+**************************************************************************
+*/

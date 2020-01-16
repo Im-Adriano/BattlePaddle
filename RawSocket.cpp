@@ -94,7 +94,7 @@ RawSocket::~RawSocket() {
     delete packet;
 }
 
-RawSocket::RawSocket(const char* intNameOrIP, int debug, bool isIP /* =false */) : debugMode(debug) {
+RawSocket::RawSocket(const char* intNameOrIP, bool debug, bool isIP /* =false */) : debugMode(debug) {
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
     createSocket();
@@ -208,7 +208,7 @@ RawSocket::~RawSocket() {
     delete packet;
 }
 
-RawSocket::RawSocket(int debug) : debugMode(debug) {
+RawSocket::RawSocket(bool debug) : debugMode(debug) {
     packet = new Packet();
     packet->data = new unsigned char[PACKET_SIZE];
     setup();
