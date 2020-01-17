@@ -82,8 +82,8 @@ int RawSocketHelper::findOutwardFacingNIC(const char * destination_address){
         if (ifa->ifa_addr && AF_INET == ifa->ifa_addr->sa_family){
             struct sockaddr_in* inaddr = (struct sockaddr_in*)ifa->ifa_addr;
             if (inaddr->sin_addr.s_addr == ((struct sockaddr_in *)&addrOut)->sin_addr.s_addr && ifa->ifa_name){
-                    cout << "Using interface " << ifa->ifa_name << " to bind to. Interface uses IP: " << source_address << endl;
-                    getInterfaceIndex(ifa->ifa_name);
+                cout << "Using interface " << ifa->ifa_name << " to bind to. Interface uses IP: " << source_address << endl;
+                getInterfaceIndex(ifa->ifa_name);
             }
         }
     }
