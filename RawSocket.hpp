@@ -10,6 +10,8 @@
 #include <netpacket/packet.h>	
 #include <mutex>
 #include <ifaddrs.h>
+#include "RawSocketHelper.hpp"
+#include <vector>
 #elif defined(_WIN32) || defined(WIN32) 
 #include <iostream>
 #include <string.h>
@@ -22,18 +24,16 @@
 
 using namespace std;
 
-typedef struct {
-    unsigned char* data;
-    int dataLength;
-}Packet;
+typedef vector<uint8_t> Packet;
 
 class RawSocket
 {
     int PACKET_SIZE = 65535;
 
     private:
-        Packet * packet;
+        Packet packet;
         bool debugMode;
+        RawSocketHelper rawSocketHelper;
   
     public:
         #ifdef __unix__
@@ -46,9 +46,9 @@ class RawSocket
         
         ~RawSocket();
 
-        Packet * getPacket();
+        Packet getPacket();
 
-        void recieve();
+        int recieve();
 
-        void send(Packet * dataframe);
+        int send(Packet dataframe);
 };

@@ -31,7 +31,7 @@ int main(){
         string input;
         cout << "Enter interface name: ";
         getline(cin, input);
-        // socks.push_back(new RawSocket(input.c_str(), true));
+        //socks.push_back(new RawSocket(input.c_str(), false));
         socks.push_back(new RawSocket("127.0.0.1", true, true));
 
     }
@@ -41,12 +41,17 @@ int main(){
     for(;;){
         for(auto sock: socks){
             sock->recieve();
-            Packet * meep = new Packet;
+            // Packet boi = sock->getPacket();
+            // if(boi.size() > 0){
+            //     for( int i = 0; i < boi.size(); i++ ){
+            //         cout << hex << int(boi.at(i)) << " ";
+            //     }
+            //     cout << endl;
+            // }
+            Packet meep;
             string d = "HERE IS SOME TOTALLY REAL TRAFFIC";
-            meep->data= (unsigned char*)d.c_str();
-            meep->dataLength = d.size();
+            meep.insert(meep.begin(), d.begin(), d.end());
             sock->send(meep);
-            delete meep;
         }
     }
 }
