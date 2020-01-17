@@ -67,14 +67,10 @@ int RawSocket::send(Packet dataframe) {
 
 #elif defined(OS_Windows)
 
-RawSocket::~RawSocket() {
-    delete packet;
-}
+RawSocket::~RawSocket() {}
 
 RawSocket::RawSocket(bool debug) : debugMode(debug) {
-    packet = new Packet();
-    packet.data = new unsigned char[PACKET_SIZE];
-    rawSocketHelper = new RawSocketHelper();
+    rawSocketHelper = RawSocketHelper();
     rawSocketHelper.setup();
 }
 
@@ -85,27 +81,25 @@ Packet* RawSocket::getPacket() {
 }
 
 int RawSocket::recieve() {
-    if (!WinDivertRecv(rawSocketHelper.handle, packet.data, PACKET_SIZE, (UINT *)(&packet.dataLength), &address))
+    if (!WinDivertRecv(rawSocketHelper.handle, packet.data, PACKET_SIZE, (UINT *)(&packet.size()), &address))
     {
         fprintf(stderr, "warning: failed to read packet (%d)\n",
             GetLastError());
         return -1;
     }
-    else {
-        if (debugMode) {
-            SetConsoleTextAttribute(rawSocketHelper.console,
-                FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE);
-            cout << "RAW BYTES" << endl;
-            for (int i = 0; i < packet.dataLength; i++) {
-                cout << hex << (int)packet.data[i] << " ";
-            }
-            cout << endl;
+    if (debugMode) {
+        SetConsoleTextAttribute(rawSocketHelper.console,
+            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE);
+        cout << "RAW BYTES" << endl;
+        for (int i = 0; i < packet.size(); i++) {
+            cout << hex << (int)packet.at(i) << " ";
         }
+        cout << endl;
     }
     return 0;
 }
 
-int RawSocket::send(Packet * dataframe) {
+int RawSocket::send(Packet dataframe) {
     if (debugMode) {
         cout << "Sending currently not supported for Windows" << endl;
     }
