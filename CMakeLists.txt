@@ -14,14 +14,14 @@ if (WIN32)
     find_library(WINDIVERT_LIB WinDivert WinDivert)
     
     target_link_libraries(main ${WINDIVERT_LIB})
-    add_custom_command(TARGET main POST_BUILD        # Adds a post-build event to MyTest
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
-        "${PROJECT_SOURCE_DIR}/WinDivert/WinDivert.dll"      # <--this is in-file
-        $<TARGET_FILE_DIR:main>)                 # <--this is out-file path
-    add_custom_command(TARGET main POST_BUILD        # Adds a post-build event to MyTest
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different  # which executes "cmake - E copy_if_different..."
-        "${PROJECT_SOURCE_DIR}/WinDivert/WinDivert32.sys"      # <--this is in-file
-        $<TARGET_FILE_DIR:main>)                 # <--this is out-file path
+    add_custom_command(TARGET main POST_BUILD    
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/WinDivert/WinDivert.dll"
+        $<TARGET_FILE_DIR:main>) 
+    add_custom_command(TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/WinDivert/WinDivert32.sys"
+        $<TARGET_FILE_DIR:main>)
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
     message("WINDOWS")
 endif(WIN32)
