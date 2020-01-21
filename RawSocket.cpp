@@ -36,7 +36,6 @@ int RawSocket::recieve(){
         }
         return -2;
     }
-    cout << packetLen << endl;
     packet.insert(packet.begin(), buf, buf+packetLen);
     if (debugMode) {
         cout << "From socket: " << rawSocketHelper.sockFd << endl;
