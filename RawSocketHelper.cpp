@@ -91,12 +91,9 @@ int RawSocketHelper::findOutwardFacingNIC(const char * destination_address){
     return 0;
 }
 
-#elif Defined(OS_Window)
+#elif defined(OS_Windows)
 
 int RawSocketHelper::setup() {
-    // Get console for pretty colors.
-    console = GetStdHandle(STD_OUTPUT_HANDLE);
-    // Divert traffic matching the filter: ALL
     handle = WinDivertOpen("true", WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_SNIFF | WINDIVERT_FLAG_FRAGMENTS);
     if (handle == INVALID_HANDLE_VALUE)
     {

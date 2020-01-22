@@ -10,7 +10,15 @@
 #include <netpacket/packet.h>	
 #include <mutex>
 #include <ifaddrs.h>
+#elif defined(_WIN32) || defined(WIN32)
+#define OS_Windows
+#include <iostream>
+#include <string.h>
+#include <windows.h>
+#include "WinDivert\windivert.h"
+#endif
 
+#if __unix__
 class RawSocketHelper{
     public: 
         int interfaceIndex;
@@ -28,17 +36,14 @@ class RawSocketHelper{
 
         int findOutwardFacingNIC(const char * destination_address);
 };
-#elif Defined(OS_Window)
-#include <iostream>
-#include <string.h>
-#include <windows.h>
-#include "WinDivert\windivert.h"
+
+#elif defined(OS_Windows)
 class RawSocketHelper{
     public: 
-        HANDLE handle, console;
+        HANDLE handle;
         INT16 priority = 0;
         WINDIVERT_ADDRESS address;
         const char* err_str;
-        void setup();
+        int setup();
 };
 #endif

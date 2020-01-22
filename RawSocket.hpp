@@ -13,11 +13,13 @@
 #include "RawSocketHelper.hpp"
 #include <vector>
 #elif defined(_WIN32) || defined(WIN32) 
+#define OS_Windows
 #include <iostream>
+#include <vector>
 #include <string.h>
 #include <windows.h>
 #include "WinDivert\windivert.h"
-#define OS_Windows
+#include "RawSocketHelper.hpp"
 #endif
 
 using namespace std;
@@ -26,7 +28,7 @@ typedef vector<uint8_t> Packet;
 
 class RawSocket
 {
-    int PACKET_SIZE = 65535;
+    static const int PACKET_SIZE = 65535;
 
     private:
         Packet packet;
@@ -36,12 +38,11 @@ class RawSocket
     public:
         #ifdef __unix__
         RawSocket(const char* intNameOrIP, bool debug, bool isIP=false);
+        RawSocket();
         #elif defined(OS_Windows)
-        RawSocket(int debug);
+        RawSocket(bool debug = false);
         #endif
 
-        RawSocket();
-        
         ~RawSocket();
 
         Packet getPacket();

@@ -73,22 +73,22 @@ RawSocket::RawSocket(bool debug) : debugMode(debug) {
     rawSocketHelper.setup();
 }
 
-RawSocket::RawSocket() = default;
-
-Packet* RawSocket::getPacket() {
+Packet RawSocket::getPacket() {
     return packet;
 }
 
 int RawSocket::recieve() {
-    if (!WinDivertRecv(rawSocketHelper.handle, packet.data, PACKET_SIZE, (UINT *)(&packet.size()), &address))
+    packet.clear();
+    unsigned char buf[PACKET_SIZE];
+    int packetLen = 0;
+    if (!WinDivertRecv(rawSocketHelper.handle, buf, PACKET_SIZE, (UINT *)(&packetLen), &rawSocketHelper.address))
     {
         fprintf(stderr, "warning: failed to read packet (%d)\n",
             GetLastError());
         return -1;
     }
+    packet.insert(packet.begin(), buf, buf + packetLen);
     if (debugMode) {
-        SetConsoleTextAttribute(rawSocketHelper.console,
-            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | BACKGROUND_BLUE);
         cout << "RAW BYTES" << endl;
         for (int i = 0; i < packet.size(); i++) {
             cout << hex << (int)packet.at(i) << " ";

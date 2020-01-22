@@ -1,6 +1,7 @@
 #include "RawSocket.hpp"
 #include <csignal>
 #include <vector>
+
 using namespace std;
 
 /*
@@ -10,18 +11,19 @@ THIS IS FOR TESING OF THE RAWSOCKET LIBRARY NOT AN ACTUAL USEFUL PROGRAM.
 */
 
 
-vector<RawSocket *> socks;
+vector<RawSocket> socks;
 
 void cleanup(int i){
     cout << "Safely shutting down..." << endl;
     for(auto s: socks){
-        s->~RawSocket();
+        s.~RawSocket();
     }
     exit(i);
 }
 
 int main(){
     signal(SIGINT, cleanup);
+
     #ifdef __unix__
     int in = 0;
     cout << "Enter the number of sockets to make: " ;
@@ -33,25 +35,17 @@ int main(){
         getline(cin, input);
         //socks.push_back(new RawSocket(input.c_str(), false));
         socks.push_back(new RawSocket("127.0.0.1", true, true));
-
     }
     #elif defined(OS_Windows)
-    socks.push_back(new RawSocket(true));
+    socks.push_back(RawSocket(true));
     #endif
-    for(;;){
+    for (;;) {
         for(auto sock: socks){
-            sock->recieve();
-            // Packet boi = sock->getPacket();
-            // if(boi.size() > 0){
-            //     for( int i = 0; i < boi.size(); i++ ){
-            //         cout << hex << int(boi.at(i)) << " ";
-            //     }
-            //     cout << endl;
-            // }
+            sock.recieve();
             Packet meep;
             string d = "HERE IS SOME TOTALLY REAL TRAFFIC";
             meep.insert(meep.begin(), d.begin(), d.end());
-            sock->send(meep);
+            sock.send(meep);
         }
     }
 }
