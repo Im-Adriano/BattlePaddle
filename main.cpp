@@ -34,7 +34,7 @@ int main(){
         cout << "Enter interface name: ";
         getline(cin, input);
         //socks.push_back(new RawSocket(input.c_str(), false));
-        socks.push_back(new RawSocket("127.0.0.1", true, true));
+        socks.push_back(RawSocket("127.0.0.1", true, true));
     }
     #elif defined(OS_Windows)
     socks.push_back(RawSocket(true));
