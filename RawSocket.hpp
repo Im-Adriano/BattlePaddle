@@ -17,6 +17,7 @@
 #define OS_Windows
 #include <iostream>
 #include <vector>
+#include <iomanip>
 #include <string.h>
 #include <windows.h>
 #include "WinDivert\windivert.h"

@@ -40,9 +40,9 @@ int main(){
         socks.push_back(RawSocket("8.8.8.8", false, true));
     // }
     #elif defined(OS_Windows)
-    socks.push_back(RawSocket(true));
+    socks.push_back(RawSocket(false));
     #endif
-    for (;;) {
+    for (int i = 0; i < 15; i++) {
         for(auto sock: socks){
             sock.recieve();
             Packet pack = sock.getPacket();
