@@ -12,6 +12,7 @@
 #include <ifaddrs.h>
 #include "RawSocketHelper.hpp"
 #include <vector>
+#include <iomanip>
 #elif defined(_WIN32) || defined(WIN32) 
 #define OS_Windows
 #include <iostream>
@@ -21,11 +22,12 @@
 #include "WinDivert\windivert.h"
 #include "RawSocketHelper.hpp"
 #endif
-
 using namespace std;
 
 typedef vector<uint8_t> Packet;
+#define HEX( x ) setw(2) << setfill('0') << hex << (int)( x )
 
+   
 class RawSocket
 {
     static const int PACKET_SIZE = 65535;

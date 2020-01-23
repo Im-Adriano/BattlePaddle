@@ -1,8 +1,11 @@
 #include "RawSocket.hpp"
+#include "PacketParse.hpp"
+#include <sstream>
 #include <csignal>
 #include <vector>
 
 using namespace std;
+using namespace PacketParse;
 
 /*
 **************************************************************************
@@ -15,9 +18,9 @@ vector<RawSocket> socks;
 
 void cleanup(int i){
     cout << "Safely shutting down..." << endl;
-    for(auto s: socks){
-        s.~RawSocket();
-    }
+    // for(auto s: socks){
+    //     s.~RawSocket();
+    // }
     exit(i);
 }
 
@@ -25,27 +28,42 @@ int main(){
     signal(SIGINT, cleanup);
 
     #ifdef __unix__
-    int in = 0;
-    cout << "Enter the number of sockets to make: " ;
-    cin >> in;
-    cin.ignore();
-    for (in; in > 0; in--) {
-        string input;
-        cout << "Enter interface name: ";
-        getline(cin, input);
+    // int in = 0;
+    // cout << "Enter the number of sockets to make: " ;
+    // cin >> in;
+    // cin.ignore();
+    // for (in; in > 0; in--) {
+        // string input;
+        // cout << "Enter interface name: ";
+        // getline(cin, input);
         //socks.push_back(new RawSocket(input.c_str(), false));
-        socks.push_back(RawSocket("127.0.0.1", true, true));
-    }
+        socks.push_back(RawSocket("8.8.8.8", false, true));
+    // }
     #elif defined(OS_Windows)
     socks.push_back(RawSocket(true));
     #endif
     for (;;) {
         for(auto sock: socks){
             sock.recieve();
-            Packet meep;
-            string d = "HERE IS SOME TOTALLY REAL TRAFFIC";
-            meep.insert(meep.begin(), d.begin(), d.end());
-            sock.send(meep);
+            Packet pack = sock.getPacket();
+            if(pack.size() > 0){
+                std::istringstream stream(std::string((char*)pack.data(), pack.size()));
+                auto ether_header = load<ether_header_t>(stream);
+                auto ip_header = load<ip_header_t>(stream);
+                if(ip_header.protocol[0] == 0x11){
+                    if( ip_header.size() > 20 ) { 
+                        stream.seekg(ip_header.size() + sizeof(ether_header_t), std::ios_base::beg);
+                    }
+                    auto udp_header = load<udp_header_t>(stream);
+                    cout << ether_header << endl;
+                    cout << ip_header << endl;
+                    cout << udp_header << endl;
+                }
+            }
+            // Packet meep;
+            // string d = "HERE IS SOME TOTALLY REAL TRAFFIC";
+            // meep.insert(meep.begin(), d.begin(), d.end());
+            // sock.send(meep);
         }
     }
 }

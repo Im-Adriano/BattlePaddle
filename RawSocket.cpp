@@ -40,7 +40,7 @@ int RawSocket::recieve(){
     if (debugMode) {
         cout << "From socket: " << rawSocketHelper.sockFd << endl;
         for( int i = 0; i < packet.size(); i++ ){
-            cout << hex << int(packet.at(i)) << " ";
+            cout << HEX(packet.at(i)) << " ";
         }
         cout << endl;
     }
