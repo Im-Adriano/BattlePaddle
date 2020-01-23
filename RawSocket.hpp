@@ -18,9 +18,7 @@
 #include <iostream>
 #include <vector>
 #include <iomanip>
-#include <string.h>
 #include <windows.h>
-#include <iomanip>
 #include "WinDivert\windivert.h"
 #include "RawSocketHelper.hpp"
 #endif
