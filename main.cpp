@@ -42,20 +42,24 @@ int main(){
     #elif defined(OS_Windows)
     socks.push_back(RawSocket(false));
     #endif
-    for (int i = 0; i < 15; i++) {
+    for (;;) {
         for(auto sock: socks){
             sock.recieve();
             Packet pack = sock.getPacket();
             if(pack.size() > 0){
                 std::istringstream stream(std::string((char*)pack.data(), pack.size()));
+                #ifdef __unix__
                 auto ether_header = load<ether_header_t>(stream);
+                #endif
                 auto ip_header = load<ip_header_t>(stream);
                 if(ip_header.protocol[0] == 0x11){
                     if( ip_header.size() > 20 ) { 
                         stream.seekg(ip_header.size() + sizeof(ether_header_t), std::ios_base::beg);
                     }
                     auto udp_header = load<udp_header_t>(stream);
+                    #ifdef __unix__
                     cout << ether_header << endl;
+                    #endif
                     cout << ip_header << endl;
                     cout << udp_header << endl;
                 }

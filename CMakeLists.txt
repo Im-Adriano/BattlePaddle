@@ -23,5 +23,10 @@ if (WIN32)
         "${PROJECT_SOURCE_DIR}/WinDivert/WinDivert32.sys"
         $<TARGET_FILE_DIR:main>)
     set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+        add_custom_command(TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/WinDivert/WinDivert64.sys"
+        $<TARGET_FILE_DIR:main>)
+    set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
     message("WINDOWS")
 endif(WIN32)
