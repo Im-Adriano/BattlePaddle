@@ -1,6 +1,4 @@
 #ifdef __unix__
-#include <malloc.h>
-#include <sys/socket.h>
 #include <net/ethernet.h>
 #include <arpa/inet.h> 
 #include <iostream>
@@ -8,7 +6,6 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <netpacket/packet.h>	
-#include <mutex>
 #include <ifaddrs.h>
 #elif defined(_WIN32) || defined(WIN32)
 #define OS_Windows

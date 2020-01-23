@@ -1,15 +1,5 @@
 #ifdef __unix__         
-#include <malloc.h>
-#include <sys/socket.h>
-#include <net/ethernet.h>
-#include <arpa/inet.h> 
 #include <iostream>
-#include <net/if.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <netpacket/packet.h>	
-#include <mutex>
-#include <ifaddrs.h>
 #include "RawSocketHelper.hpp"
 #include <vector>
 #include <iomanip>

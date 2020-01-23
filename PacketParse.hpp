@@ -1,12 +1,8 @@
-#include <istream>
-#include <ostream>
-#include <cstring>
-#include <iostream>
 #include <iomanip>
 
 using namespace std;
 #define HEX( x ) setw(2) << setfill('0') << hex << (int)( x )
-#define PRINTHEX( x, y , z) y << setw(15) << setfill(' ') << z; \
+#define PRINTHEX( x, y, z) y << setw(15) << setfill(' ') << z; \
     for(int i = 0; i < sizeof(x); i++){ \
         y << HEX(x[i]) << " "; \
     } \
