@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project (main)
 #find_package(Threads)
 #SET(CMAKE_CXX_FLAGS -pthread)
-SET( CMAKE_BUILD_TYPE Release )
+SET( CMAKE_BUILD_TYPE debug )
 
 file(GLOB SRC
     "*.hpp"

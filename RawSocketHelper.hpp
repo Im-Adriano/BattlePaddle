@@ -3,7 +3,7 @@
 #include <arpa/inet.h> 
 #include <iostream>
 #include <net/if.h>
-#include <string.h>
+#include <cstring>
 #include <sys/ioctl.h>
 #include <netpacket/packet.h>	
 #include <ifaddrs.h>

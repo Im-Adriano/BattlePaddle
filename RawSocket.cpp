@@ -4,7 +4,7 @@ using namespace std;
 
 #ifdef __unix__
 
-RawSocket::~RawSocket() {}
+RawSocket::~RawSocket() = default;
 
 RawSocket::RawSocket(const char* intNameOrIP, bool debug, bool isIP /* =false */) : debugMode(debug) {
     rawSocketHelper = RawSocketHelper();
@@ -25,7 +25,7 @@ Packet RawSocket::getPacket() {
     return packet;
 }
 
-int RawSocket::recieve(){
+int RawSocket::receive(){
     packet.clear();
     unsigned char buf[PACKET_SIZE];
     int packetLen = recv(rawSocketHelper.sockFd, buf, PACKET_SIZE, 0);
@@ -49,7 +49,7 @@ int RawSocket::recieve(){
 }
 
 int RawSocket::send(Packet dataframe) {
-    struct sockaddr_ll socket_address;
+    struct sockaddr_ll socket_address{};
     socket_address.sll_ifindex = rawSocketHelper.interfaceIndex;
     socket_address.sll_halen = ETH_ALEN;
 
@@ -77,7 +77,7 @@ Packet RawSocket::getPacket() {
     return packet;
 }
 
-int RawSocket::recieve() {
+int RawSocket::receive() {
     packet.clear();
     unsigned char buf[PACKET_SIZE];
     int packetLen = 0;

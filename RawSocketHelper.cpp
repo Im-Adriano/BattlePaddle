@@ -34,7 +34,7 @@ int RawSocketHelper::createSocket() {
 }
 
 int RawSocketHelper::setSocketOptions() {
-    struct timeval tv;
+    struct timeval tv{};
     tv.tv_sec = 0;
     tv.tv_usec = 100;
     if(setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0){
@@ -78,9 +78,9 @@ int RawSocketHelper::findOutwardFacingNIC(const char * destination_address){
     struct ifaddrs* ifaddr;
     struct ifaddrs* ifa;
     getifaddrs(&ifaddr);
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next){
+    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next){
         if (ifa->ifa_addr && AF_INET == ifa->ifa_addr->sa_family){
-            struct sockaddr_in* inaddr = (struct sockaddr_in*)ifa->ifa_addr;
+            auto* inaddr = (struct sockaddr_in*)ifa->ifa_addr;
             if (inaddr->sin_addr.s_addr == ((struct sockaddr_in *)&addrOut)->sin_addr.s_addr && ifa->ifa_name){
                 cout << "Using interface " << ifa->ifa_name << " to bind to. Interface uses IP: " << source_address << endl;
                 getInterfaceIndex(ifa->ifa_name);

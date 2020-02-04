@@ -24,8 +24,8 @@ class RawSocket
 
     private:
         Packet packet;
-        bool debugMode;
-        RawSocketHelper rawSocketHelper;
+        bool debugMode{};
+        RawSocketHelper rawSocketHelper{};
   
     public:
         #ifdef __unix__
@@ -39,7 +39,7 @@ class RawSocket
 
         Packet getPacket();
 
-        int recieve();
+        int receive();
 
         int send(Packet dataframe);
 };
