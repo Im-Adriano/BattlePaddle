@@ -6,13 +6,13 @@ using namespace std;
 
 RawSocket::~RawSocket() = default;
 
-RawSocket::RawSocket(const char* intNameOrIP, bool debug, bool isIP /* =false */) : debugMode(debug) {
+RawSocket::RawSocket(const string& intNameOrIP, bool debug, bool isIP /* =false */) : debugMode(debug) {
     rawSocketHelper = RawSocketHelper();
     rawSocketHelper.createSocket();
     if(isIP){
-        rawSocketHelper.findOutwardFacingNIC(intNameOrIP);
+        rawSocketHelper.findOutwardFacingNIC(intNameOrIP.c_str());
     }else{
-        rawSocketHelper.getInterfaceIndex(intNameOrIP);
+        rawSocketHelper.getInterfaceIndex(intNameOrIP.c_str());
     }
     rawSocketHelper.createAddressStruct();
     rawSocketHelper.setSocketOptions();
@@ -58,7 +58,7 @@ int RawSocket::send(Packet dataframe) {
             cout << "Packet must be atleast 14 bytes long" << endl;
         }
     }else if (sendto(rawSocketHelper.sockFd, dataframe.data(), dataframe.size(), 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
-        perror("Send failed::");
+        perror("Send failed: ");
         return -1;
     }
     return 0;

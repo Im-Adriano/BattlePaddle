@@ -5,9 +5,13 @@
 #include <sstream>    
 #include <ios>                              
 #include <climits>     
-#include <type_traits> 
+#include <type_traits>
+#include <vector>
 
 using namespace std;
+
+typedef vector<uint8_t> Packet;
+
 namespace PacketParse {
     const uint32_t MAGIC_BYTES = 0x43503c33; // BP<3
 
@@ -37,14 +41,16 @@ namespace PacketParse {
         uint16_t length;
         uint16_t checksum;
     };
-    struct bp_command_request_t {
+
+    struct bp_header_t {
         uint32_t magic_bytes = MAGIC_BYTES;
-        uint8_t header_type = 0x01;
+        uint8_t header_type{};
+    };
+
+    struct bp_command_request_t {
         uint8_t target_OS{}; // 0x01 Linux | 0x02 Windows
     };
     struct bp_raw_command_t {
-        uint32_t magic_bytes = MAGIC_BYTES;
-        uint8_t header_type = 0x03;
         uint8_t target_OS{}; // 0x01 Linux | 0x02 Windows
         uint32_t command_num{}; // For metrics
         uint32_t host_ip{};
@@ -52,18 +58,27 @@ namespace PacketParse {
         uint8_t raw_command[500]{}; // The custom command
     };
     struct bp_response_t{
-        uint32_t magic_bytes = MAGIC_BYTES; 
-        uint8_t header_type = 0x04;
         uint32_t command_num{}; // For metrics
         uint32_t host_ip{}; // When relaying becomes a thing
         uint16_t data_len{};
         uint8_t data[500]{}; // Other metrics about command ran or health of host
     };
 
+    struct info_t{
+        ether_header_t etherHeader{};
+        ip_header_t ipHeader{};
+        udp_header_t udpHeader{};
+        bp_header_t bpHeader{};
+        bp_command_request_t bpCommandRequest{};
+        bp_raw_command_t bpRawCommand{};
+        bp_response_t bpResponse{};
+    };
+
     template<typename T> T load(istream& stream, bool ntoh = true);
     template<> ether_header_t load(istream& stream, bool ntoh);
     template<> ip_header_t  load(istream& stream, bool ntoh);
     template<> udp_header_t load(istream& stream, bool ntoh);
+    template <> bp_header_t load(istream& stream, bool ntoh);
     template<> bp_command_request_t load(istream& stream, bool ntoh);
     template<> bp_raw_command_t load(istream& stream, bool ntoh);
     template<> bp_response_t load(istream& stream, bool ntoh);
@@ -71,8 +86,13 @@ namespace PacketParse {
     ostream& operator << (ostream& o, const ether_header_t& a);
     ostream& operator << (ostream& o, const ip_header_t& a);
     ostream& operator << (ostream& o, const udp_header_t& a);
+    ostream& operator << (ostream& o, const bp_header_t& a);
     ostream& operator << (ostream& o, const bp_command_request_t& a);
     ostream& operator << (ostream& o, const bp_raw_command_t& a);
     ostream& operator << (ostream& o, const bp_response_t& a);
+    ostream& operator << (ostream& o,  unique_ptr<info_t> a);
+
+
+    unique_ptr<info_t> parsePacket(Packet packet);
 
 }

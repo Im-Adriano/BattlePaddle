@@ -3,6 +3,7 @@
 #include "RawSocketHelper.hpp"
 #include <vector>
 #include <iomanip>
+#include <string>
 #elif defined(_WIN32) || defined(WIN32) 
 #define OS_Windows
 #include <iostream>
@@ -29,7 +30,7 @@ class RawSocket
   
     public:
         #ifdef __unix__
-        RawSocket(const char* intNameOrIP, bool debug, bool isIP=false);
+        RawSocket(const string& intNameOrIP, bool debug, bool isIP=false);
         RawSocket();
         #elif defined(OS_Windows)
         RawSocket(bool debug = false);
