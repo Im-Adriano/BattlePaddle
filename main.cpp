@@ -53,7 +53,7 @@ int main(){
             udp_header.checksum = htons(0xDEAD);
 
             ip_header.ver_ihl = 0x45;
-            ip_header.total_length = htons(udp_len + sizeof(ip_header));
+            ip_header.total_length = htons(udp_len + (uint16_t)sizeof(ip_header));
             ip_header.id = htons(0xda80);
             ip_header.flags_fo = htons(0x0000);
             ip_header.ttl = 0x80;
@@ -69,20 +69,20 @@ int main(){
            const uint8_t src[] = { 0x12, 0x34, 0x00, 0x78, 0xAC, 0xDC };
            memcpy(ether_header.dst_mac, dst, 6);
            memcpy(ether_header.src_mac, src, 6);
-           ether_header.type = 0x0800;  
-           auto ether_ptr = reinterpret_cast<unsigned char *>(&ether_header);     
+           ether_header.type = htons(0x0800);
+           auto ether_ptr = reinterpret_cast<unsigned char *>(&ether_header);
 #endif
 
-            auto ip_ptr = reinterpret_cast<unsigned char *>(&ip_header);     
+            auto ip_ptr = reinterpret_cast<unsigned char *>(&ip_header);
             auto udp_ptr = reinterpret_cast<unsigned char *>(&udp_header);
             auto bp_header_ptr = reinterpret_cast<unsigned  char *>(&bpHeader);
-            auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_command_request_header);     
+            auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_command_request_header);
 #ifdef __unix__
             Packet meep(ether_ptr, ether_ptr + sizeof(ether_header));
-            meep.insert(meep.end(), ip_ptr, ip_ptr + sizeof(ether_header));
+            meep.insert(meep.end(), ip_ptr, ip_ptr + sizeof(ip_header));
 #else
             Packet meep(ip_ptr, ip_ptr + sizeof(ip_header));
-#endif            
+#endif
             meep.insert(meep.end(), udp_ptr, udp_ptr + sizeof(udp_header));
             meep.insert(meep.end(), bp_header_ptr, bp_header_ptr + sizeof(bpHeader));
             meep.insert(meep.end(), bp_ptr, bp_ptr + sizeof(bp_command_request_header));
