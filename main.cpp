@@ -53,7 +53,7 @@ int main(){
             udp_header.checksum = htons(0xDEAD);
 
             ip_header.ver_ihl = 0x45;
-            ip_header.total_length = htons(udp_len + sizeof(ether_header));
+            ip_header.total_length = htons(udp_len + sizeof(ip_header));
             ip_header.id = htons(0xda80);
             ip_header.flags_fo = htons(0x0000);
             ip_header.ttl = 0x80;
