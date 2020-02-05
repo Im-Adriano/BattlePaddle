@@ -99,10 +99,17 @@ int RawSocket::receive() {
 }
 
 int RawSocket::send(Packet dataframe) {
-    if (debugMode) {
-        cout << "Sending currently not supported for Windows" << endl;
+    unique_ptr<WINDIVERT_ADDRESS> sendAddr = make_unique<WINDIVERT_ADDRESS>();
+    if (sendAddr != nullptr) {
+        sendAddr->Outbound = 1;
+        if (!WinDivertSend(rawSocketHelper.handle, dataframe.data(), dataframe.size(), NULL, sendAddr.get())) {
+            fprintf(stderr, "warning: failed to send packet (%d)\n",
+                GetLastError());
+            return -1;
+        }
+        return 0;
     }
-    return 0;
+    return 1;
 }
 #endif
 

@@ -1,12 +1,22 @@
 #include <iomanip>
 #include <cstring>
-#include <arpa/inet.h>
 #include <string>     
 #include <sstream>    
 #include <ios>                              
 #include <climits>     
 #include <type_traits>
 #include <vector>
+#ifdef __unix__
+#include <arpa/inet.h>
+#elif defined(_WIN32) || defined(WIN32)
+#include "WinDivert\windivert.h"
+#define ntohs(x) WinDivertHelperNtohs(x)
+#define ntohl(x) WinDivertHelperNtohl(x)
+#define htons(x) WinDivertHelperHtons(x)
+#define htonl(x) WinDivertHelperHtonl(x)
+#endif 
+
+
 
 using namespace std;
 
