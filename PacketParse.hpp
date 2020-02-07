@@ -74,6 +74,12 @@ namespace PacketParse {
         uint8_t data[500]{}; // Other metrics about command ran or health of host
     };
 
+    struct bp_keep_alive_t{
+        uint8_t target_OS{};
+        uint32_t command_num{};
+        uint32_t host_ip{};
+    };
+
     struct info_t{
         ether_header_t etherHeader{};
         ip_header_t ipHeader{};
@@ -82,6 +88,7 @@ namespace PacketParse {
         bp_command_request_t bpCommandRequest{};
         bp_raw_command_t bpRawCommand{};
         bp_response_t bpResponse{};
+        bp_keep_alive_t bpKeepAlive{};
     };
 
     template<typename T> T load(istream& stream, bool ntoh = true);
@@ -92,6 +99,7 @@ namespace PacketParse {
     template<> bp_command_request_t load(istream& stream, bool ntoh);
     template<> bp_raw_command_t load(istream& stream, bool ntoh);
     template<> bp_response_t load(istream& stream, bool ntoh);
+    template<> bp_keep_alive_t load(istream& stream, bool ntoh);
 
     ostream& operator << (ostream& o, const ether_header_t& a);
     ostream& operator << (ostream& o, const ip_header_t& a);
@@ -100,8 +108,8 @@ namespace PacketParse {
     ostream& operator << (ostream& o, const bp_command_request_t& a);
     ostream& operator << (ostream& o, const bp_raw_command_t& a);
     ostream& operator << (ostream& o, const bp_response_t& a);
+    ostream& operator << (ostream& o, const bp_keep_alive_t& a);
     ostream& operator << (ostream& o,  unique_ptr<info_t> a);
-
 
     unique_ptr<info_t> parsePacket(Packet packet);
 

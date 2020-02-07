@@ -21,7 +21,10 @@ class RawSocketHelper{
         int interfaceIndex;
         int sockFd;
         struct sockaddr_ll addr;
-        int getInterfaceIndex(const char* inter);
+        uint8_t macAddress[6];
+        uint32_t ipAddress;
+
+        int getInterfaceIndexAndInfo(const char* inter);
 
         int createAddressStruct();
 

@@ -12,7 +12,7 @@ RawSocket::RawSocket(const string& intNameOrIP, bool debug, bool isIP /* =false 
     if(isIP){
         rawSocketHelper.findOutwardFacingNIC(intNameOrIP.c_str());
     }else{
-        rawSocketHelper.getInterfaceIndex(intNameOrIP.c_str());
+        rawSocketHelper.getInterfaceIndexAndInfo(intNameOrIP.c_str());
     }
     rawSocketHelper.createAddressStruct();
     rawSocketHelper.setSocketOptions();

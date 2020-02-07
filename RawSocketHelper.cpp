@@ -3,14 +3,23 @@
 using namespace std;
 
 #ifdef __unix__
-int RawSocketHelper::getInterfaceIndex(const char* inter) {
+int RawSocketHelper::getInterfaceIndexAndInfo(const char* inter) {
     struct ifreq ifr = {0};
+    struct ifreq macIfr = {0};
     memcpy(ifr.ifr_name, inter, strlen(inter));
     if (ioctl(sockFd, SIOCGIFINDEX, &ifr) != 0) {
         perror("Interface Index Failure:");
         return -1;
     }
+    memcpy(&macIfr, &ifr, sizeof(ifr));
+    if (ioctl(sockFd, SIOCGIFHWADDR, &macIfr) != 0) {
+        perror("Interface HW Failure:");
+        return -1;
+    }
     interfaceIndex = ifr.ifr_ifindex;
+    memcpy(macAddress, macIfr.ifr_hwaddr.sa_data, 6);
+    printf("Interface uses MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n", 
+        macAddress[0], macAddress[1], macAddress[2], macAddress[3], macAddress[4], macAddress[5]);    
     return 0;
 }
 
@@ -82,8 +91,10 @@ int RawSocketHelper::findOutwardFacingNIC(const char * destination_address){
         if (ifa->ifa_addr && AF_INET == ifa->ifa_addr->sa_family){
             auto* inaddr = (struct sockaddr_in*)ifa->ifa_addr;
             if (inaddr->sin_addr.s_addr == ((struct sockaddr_in *)&addrOut)->sin_addr.s_addr && ifa->ifa_name){
-                cout << "Using interface " << ifa->ifa_name << " to bind to. Interface uses IP: " << source_address << endl;
-                getInterfaceIndex(ifa->ifa_name);
+                cout << "Using interface " << ifa->ifa_name << " to bind to." << endl;
+                cout << "Interface uses IP: " << source_address << endl;
+                ipAddress = ((struct sockaddr_in *)&addrOut)->sin_addr.s_addr;
+                getInterfaceIndexAndInfo(ifa->ifa_name);
             }
         }
     }

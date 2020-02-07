@@ -90,6 +90,14 @@ namespace PacketParse {
         return o;
     }
 
+    ostream &operator<<(ostream &o, const bp_keep_alive_t &a) {
+        o << "BP Keep Alive" << endl;
+        o << "command_num: " << hex_out_s(a.command_num) << endl;
+        o << "target_OS: " << hex_out_s(a.target_OS) << endl;
+        o << "host_ip: " << hex_out_s(a.host_ip) << endl;
+        return o;
+    }
+
     ostream &operator<<(ostream &o, unique_ptr<info_t> a) {
         if(a == nullptr){
             return o;
@@ -101,6 +109,7 @@ namespace PacketParse {
         o << a->bpCommandRequest << endl;
         o << a->bpRawCommand << endl;
         o << a->bpResponse << endl;
+        o << a->bpKeepAlive << endl;
         return o;
     }
 
@@ -167,6 +176,12 @@ namespace PacketParse {
         return header;
     }
 
+    template<> bp_keep_alive_t load(istream& stream, bool){
+        bp_keep_alive_t header{};
+        stream.read((char *) &header, sizeof(header));
+        return header;
+    }
+
     unique_ptr<info_t> parsePacket(Packet packet) {
         unique_ptr<info_t> info = make_unique<info_t>();
 
@@ -195,6 +210,9 @@ namespace PacketParse {
                         break;
                     case 0x03:
                         info->bpResponse = load<bp_response_t>(stream);
+                        break;
+                    case 0x04:
+                        info->bpKeepAlive = load<bp_keep_alive_t>(stream);
                         break;
                 }
             }
