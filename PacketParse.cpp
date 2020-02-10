@@ -217,9 +217,6 @@ namespace PacketParse {
 #endif
         info->ipHeader = load<ip_header_t>(stream);
         if (info->ipHeader.protocol == 0x11) {
-            if (info->ipHeader.size() > 20) {
-                stream.seekg(info->ipHeader.size() + sizeof(ether_header_t), std::ios_base::beg);
-            }
             info->udpHeader = load<udp_header_t>(stream);
             info->bpHeader = load<bp_header_t>(stream);
             if (info->bpHeader.magic_bytes == MAGIC_BYTES) {

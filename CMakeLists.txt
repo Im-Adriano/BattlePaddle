@@ -13,8 +13,8 @@ add_executable(main ${SRC})
 
 if (WIN32)
     find_library(WINDIVERT_LIB WinDivert WinDivert)
-    
-    target_link_libraries(main ${WINDIVERT_LIB})
+    find_library(IPHLPAPI_LIB iphlpapi iphlpapi)
+    target_link_libraries(main ${WINDIVERT_LIB} ${IPHLPAPI_LIB})
     add_custom_command(TARGET main POST_BUILD    
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${PROJECT_SOURCE_DIR}/WinDivert/WinDivert.dll"

@@ -14,6 +14,10 @@
 #include <windows.h>
 #include "WinDivert\windivert.h"
 #include "RawSocketHelper.hpp"
+#define ntohs(x) WinDivertHelperNtohs(x)
+#define ntohl(x) WinDivertHelperNtohl(x)
+#define htons(x) WinDivertHelperHtons(x)
+#define htonl(x) WinDivertHelperHtonl(x)
 #endif
 using namespace std;
 
@@ -37,7 +41,9 @@ public:
     RawSocket();
 
 #elif defined(OS_Windows)
-    RawSocket(bool debug = false);
+    RawSocket(uint32_t ipAddress, bool debug = false);
+    
+    RawSocket();
 #endif
 
     ~RawSocket();

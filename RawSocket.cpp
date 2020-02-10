@@ -82,9 +82,12 @@ uint8_t *RawSocket::getMac() {
 
 RawSocket::~RawSocket() {}
 
-RawSocket::RawSocket(bool debug) : debugMode(debug) {
+RawSocket::RawSocket() = default;
+
+RawSocket::RawSocket(uint32_t ipAddress, bool debug) : debugMode(debug) {
     rawSocketHelper = RawSocketHelper();
     rawSocketHelper.setup();
+    rawSocketHelper.findOutwardFacingNIC(ipAddress);
 }
 
 Packet RawSocket::getPacket() {
@@ -124,6 +127,10 @@ int RawSocket::send(Packet dataframe) {
         return 0;
     }
     return 1;
+}
+
+uint32_t RawSocket::getIP() {
+    return rawSocketHelper.ipAddress;
 }
 #endif
 

@@ -15,6 +15,7 @@
 #include <iostream>
 #include <string.h>
 #include <windows.h>
+#include <iphlpapi.h>
 #include "WinDivert\windivert.h"
 #endif
 
@@ -66,6 +67,10 @@ class RawSocketHelper{
         INT16 priority = 0;
         WINDIVERT_ADDRESS address;
         const char* err_str;
+        uint32_t ipAddress;
+
         int setup();
+
+        int findOutwardFacingNIC(uint32_t destination_address);
 };
 #endif

@@ -161,11 +161,11 @@ vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
 #elif defined(OS_Windows)
 
 int RawSocketHelper::setup() {
-    handle = WinDivertOpen("true", WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_SNIFF | WINDIVERT_FLAG_FRAGMENTS);
+    handle = WinDivertOpen("inbound", WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_SNIFF | WINDIVERT_FLAG_FRAGMENTS);
     if (handle == INVALID_HANDLE_VALUE)
     {
         if (GetLastError() == ERROR_INVALID_PARAMETER &&
-            !WinDivertHelperCompileFilter("true", WINDIVERT_LAYER_NETWORK,
+            !WinDivertHelperCompileFilter("inbound", WINDIVERT_LAYER_NETWORK,
                 NULL, 0, &err_str, NULL))
         {
             fprintf(stderr, "error: invalid filter \"%s\"\n", err_str);
@@ -175,6 +175,51 @@ int RawSocketHelper::setup() {
             GetLastError());
         return -1;
     }
+    return 0;
+}
+
+
+int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
+    DWORD bestInterface{};
+    GetBestInterface(destination_address, &bestInterface);
+
+    PIP_ADAPTER_INFO pAdapterInfo;
+    PIP_ADAPTER_INFO pAdapter = NULL;
+    DWORD dwRetVal = 0;
+    ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
+    struct tm newtime;
+    UINT i;
+    char buffer[32];
+    errno_t error;
+
+    pAdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
+    if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
+        free(pAdapterInfo);
+        pAdapterInfo = (IP_ADAPTER_INFO*)malloc(ulOutBufLen);
+        if (pAdapterInfo == NULL) {
+            printf("Error allocating memory needed to call GetAdaptersinfo\n");
+            return 1;
+        }
+    }
+
+    if ((dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen)) == NO_ERROR) {
+        pAdapter = pAdapterInfo;
+        while (pAdapter) {
+            if (pAdapter->ComboIndex == bestInterface) {
+                ipAddress = pAdapter->IpAddressList.Context;
+                cout << "Using interface " << pAdapter->AdapterName << " to bind to." << endl;
+                cout << "Interface uses IP: " << pAdapter->IpAddressList.IpAddress.String << endl;
+                break;
+            }
+            pAdapter = pAdapter->Next;
+        }
+    }
+    else {
+        printf("GetAdaptersInfo failed with error: %d\n", dwRetVal);
+    }
+
+    if (pAdapterInfo)
+        free(pAdapterInfo);
     return 0;
 }
 

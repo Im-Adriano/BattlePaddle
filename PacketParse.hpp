@@ -27,6 +27,7 @@ typedef vector<uint8_t> Packet;
 namespace PacketParse {
     const uint32_t MAGIC_BYTES = 0x42503c33; // BP<3
 
+#pragma pack(push, 1)
     struct ether_header_t {
         uint8_t dst_mac[6];
         uint8_t src_mac[6];
@@ -66,6 +67,7 @@ namespace PacketParse {
         uint8_t target_OS{}; // 0x01 Linux | 0x02 Windows
         uint32_t command_num{};
     };
+
     struct bp_raw_command_t {
         uint8_t target_OS{}; // 0x01 Linux | 0x02 Windows
         uint32_t command_num{}; // For metrics
@@ -73,6 +75,7 @@ namespace PacketParse {
         uint16_t cmd_len{};
         uint8_t raw_command[500]{}; // The custom command
     };
+
     struct bp_response_t {
         uint32_t command_num{}; // For metrics
         uint32_t host_ip{}; // When relaying becomes a thing
@@ -96,6 +99,7 @@ namespace PacketParse {
         bp_response_t bpResponse{};
         bp_keep_alive_t bpKeepAlive{};
     };
+#pragma pack(pop)
 
     template<typename T>
     T load(istream &stream, bool ntoh = true);
