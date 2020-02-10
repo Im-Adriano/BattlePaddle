@@ -25,7 +25,7 @@ using namespace std;
 typedef vector<uint8_t> Packet;
 
 namespace PacketParse {
-    const uint32_t MAGIC_BYTES = 0x43503c33; // BP<3
+    const uint32_t MAGIC_BYTES = 0x42503c33; // BP<3
 
     struct ether_header_t {
         uint8_t dst_mac[6];
@@ -58,7 +58,7 @@ namespace PacketParse {
     };
 
     struct bp_header_t {
-        uint32_t magic_bytes = MAGIC_BYTES;
+        uint32_t magic_bytes = htonl(MAGIC_BYTES);
         uint8_t header_type{};
     };
 

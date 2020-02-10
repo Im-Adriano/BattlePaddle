@@ -149,9 +149,12 @@ namespace PacketParse {
     }
 
     template<>
-    bp_header_t load(istream &stream, bool) {
+    bp_header_t load(istream &stream, bool ntoh) {
         bp_header_t header{};
         stream.read((char *) &header, sizeof(header));
+        if (ntoh){
+            header.magic_bytes = ntohl(header.magic_bytes);
+        }
         return header;
     }
 
@@ -163,23 +166,37 @@ namespace PacketParse {
     }
 
     template<>
-    bp_raw_command_t load(istream &stream, bool) {
+    bp_raw_command_t load(istream &stream, bool ntoh) {
         bp_raw_command_t header{};
         stream.read((char *) &header, sizeof(header));
+        if (ntoh){
+            header.cmd_len = ntohs(header.cmd_len);
+            header.command_num = ntohl(header.command_num);
+            header.host_ip = ntohl(header.host_ip);
+        }
         return header;
     }
 
     template<>
-    bp_response_t load(istream &stream, bool) {
+    bp_response_t load(istream &stream, bool ntoh) {
         bp_response_t header{};
         stream.read((char *) &header, sizeof(header));
+        if (ntoh){
+            header.data_len = ntohs(header.data_len);
+            header.command_num = ntohl(header.command_num);
+            header.host_ip = ntohl(header.host_ip);
+        }
         return header;
     }
 
     template<>
-    bp_keep_alive_t load(istream &stream, bool) {
+    bp_keep_alive_t load(istream &stream, bool ntoh) {
         bp_keep_alive_t header{};
         stream.read((char *) &header, sizeof(header));
+        if (ntoh){
+            header.command_num = ntohl(header.command_num);
+            header.host_ip = ntohl(header.host_ip);
+        }
         return header;
     }
 
