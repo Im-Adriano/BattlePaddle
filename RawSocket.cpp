@@ -70,6 +70,14 @@ int RawSocket::send(Packet dataframe) {
     return 0;
 }
 
+uint32_t RawSocket::getIP() {
+    return rawSocketHelper.ipAddress;
+}
+
+uint8_t *RawSocket::getMac() {
+    return rawSocketHelper.macAddress;
+}
+
 #elif defined(OS_Windows)
 
 RawSocket::~RawSocket() {}

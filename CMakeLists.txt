@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 project (main)
 SET( CMAKE_CXX_STANDARD 20)
-#find_package(Threads)
-#SET(CMAKE_CXX_FLAGS -pthread)
+find_package(Threads)
+SET(CMAKE_CXX_FLAGS -pthread)
 SET( CMAKE_BUILD_TYPE debug )
 
 file(GLOB SRC

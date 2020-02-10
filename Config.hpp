@@ -1,9 +1,9 @@
-#ifndef config_hpp
-#define config_hpp
+#include <string>
+using namespace std;
 
-uint32_t C2IP = 0x7f000001;
-string C2IPSTR = "127.0.0.1";
-
-#endif //config_hpp
-
+extern uint32_t C2IP;
+extern uint32_t GatewayIP;
+extern bool useGateway;
+extern string C2IPSTR;
+extern int requestActionInterval;
 
