@@ -77,6 +77,7 @@ namespace PacketParse {
     ostream &operator<<(ostream &o, const bp_command_request_t &a) {
         o << "BP Command Request" << endl;
         o << "target_OS: " << hex_out_s(a.target_OS) << endl;
+        o << "command_num: " << hex_out_s(a.command_num) << endl;
         return o;
     }
 
@@ -152,16 +153,19 @@ namespace PacketParse {
     bp_header_t load(istream &stream, bool ntoh) {
         bp_header_t header{};
         stream.read((char *) &header, sizeof(header));
-        if (ntoh){
+        if (ntoh) {
             header.magic_bytes = ntohl(header.magic_bytes);
         }
         return header;
     }
 
     template<>
-    bp_command_request_t load(istream &stream, bool) {
+    bp_command_request_t load(istream &stream, bool ntoh) {
         bp_command_request_t header{};
         stream.read((char *) &header, sizeof(header));
+        if (ntoh) {
+            header.command_num = ntohl(header.command_num);
+        }
         return header;
     }
 
@@ -169,7 +173,7 @@ namespace PacketParse {
     bp_raw_command_t load(istream &stream, bool ntoh) {
         bp_raw_command_t header{};
         stream.read((char *) &header, sizeof(header));
-        if (ntoh){
+        if (ntoh) {
             header.cmd_len = ntohs(header.cmd_len);
             header.command_num = ntohl(header.command_num);
             header.host_ip = ntohl(header.host_ip);
@@ -181,7 +185,7 @@ namespace PacketParse {
     bp_response_t load(istream &stream, bool ntoh) {
         bp_response_t header{};
         stream.read((char *) &header, sizeof(header));
-        if (ntoh){
+        if (ntoh) {
             header.data_len = ntohs(header.data_len);
             header.command_num = ntohl(header.command_num);
             header.host_ip = ntohl(header.host_ip);
@@ -193,7 +197,7 @@ namespace PacketParse {
     bp_keep_alive_t load(istream &stream, bool ntoh) {
         bp_keep_alive_t header{};
         stream.read((char *) &header, sizeof(header));
-        if (ntoh){
+        if (ntoh) {
             header.command_num = ntohl(header.command_num);
             header.host_ip = ntohl(header.host_ip);
         }

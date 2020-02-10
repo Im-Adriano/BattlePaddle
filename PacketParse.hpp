@@ -64,6 +64,7 @@ namespace PacketParse {
 
     struct bp_command_request_t {
         uint8_t target_OS{}; // 0x01 Linux | 0x02 Windows
+        uint32_t command_num{};
     };
     struct bp_raw_command_t {
         uint8_t target_OS{}; // 0x01 Linux | 0x02 Windows
