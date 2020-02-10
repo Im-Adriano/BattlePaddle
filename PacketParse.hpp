@@ -1,21 +1,23 @@
 #include <iomanip>
 #include <cstring>
-#include <string>     
-#include <sstream>    
-#include <ios>                              
-#include <climits>     
+#include <string>
+#include <sstream>
+#include <ios>
+#include <climits>
 #include <type_traits>
 #include <vector>
+
 #ifdef __unix__
+
 #include <arpa/inet.h>
+
 #elif defined(_WIN32) || defined(WIN32)
 #include "WinDivert\windivert.h"
 #define ntohs(x) WinDivertHelperNtohs(x)
 #define ntohl(x) WinDivertHelperNtohl(x)
 #define htons(x) WinDivertHelperHtons(x)
 #define htonl(x) WinDivertHelperHtonl(x)
-#endif 
-
+#endif
 
 
 using namespace std;
@@ -30,6 +32,7 @@ namespace PacketParse {
         uint8_t src_mac[6];
         uint16_t type;
     };
+
     struct ip_header_t {
         uint8_t ver_ihl;  // 4 bits version and 4 bits internet header length
         uint8_t tos;
@@ -43,8 +46,10 @@ namespace PacketParse {
         uint32_t dst_addr;
 
         uint8_t ihl() const;
+
         size_t size() const;
     };
+
     struct udp_header_t {
         uint16_t src_port;
         uint16_t dst_port;
@@ -67,20 +72,20 @@ namespace PacketParse {
         uint16_t cmd_len{};
         uint8_t raw_command[500]{}; // The custom command
     };
-    struct bp_response_t{
+    struct bp_response_t {
         uint32_t command_num{}; // For metrics
         uint32_t host_ip{}; // When relaying becomes a thing
         uint16_t data_len{};
         uint8_t data[500]{}; // Other metrics about command ran or health of host
     };
 
-    struct bp_keep_alive_t{
+    struct bp_keep_alive_t {
         uint8_t target_OS{};
         uint32_t command_num{};
         uint32_t host_ip{};
     };
 
-    struct info_t{
+    struct info_t {
         ether_header_t etherHeader{};
         ip_header_t ipHeader{};
         udp_header_t udpHeader{};
@@ -91,25 +96,50 @@ namespace PacketParse {
         bp_keep_alive_t bpKeepAlive{};
     };
 
-    template<typename T> T load(istream& stream, bool ntoh = true);
-    template<> ether_header_t load(istream& stream, bool ntoh);
-    template<> ip_header_t  load(istream& stream, bool ntoh);
-    template<> udp_header_t load(istream& stream, bool ntoh);
-    template <> bp_header_t load(istream& stream, bool ntoh);
-    template<> bp_command_request_t load(istream& stream, bool ntoh);
-    template<> bp_raw_command_t load(istream& stream, bool ntoh);
-    template<> bp_response_t load(istream& stream, bool ntoh);
-    template<> bp_keep_alive_t load(istream& stream, bool ntoh);
+    template<typename T>
+    T load(istream &stream, bool ntoh = true);
 
-    ostream& operator << (ostream& o, const ether_header_t& a);
-    ostream& operator << (ostream& o, const ip_header_t& a);
-    ostream& operator << (ostream& o, const udp_header_t& a);
-    ostream& operator << (ostream& o, const bp_header_t& a);
-    ostream& operator << (ostream& o, const bp_command_request_t& a);
-    ostream& operator << (ostream& o, const bp_raw_command_t& a);
-    ostream& operator << (ostream& o, const bp_response_t& a);
-    ostream& operator << (ostream& o, const bp_keep_alive_t& a);
-    ostream& operator << (ostream& o,  unique_ptr<info_t> a);
+    template<>
+    ether_header_t load(istream &stream, bool ntoh);
+
+    template<>
+    ip_header_t load(istream &stream, bool ntoh);
+
+    template<>
+    udp_header_t load(istream &stream, bool ntoh);
+
+    template<>
+    bp_header_t load(istream &stream, bool ntoh);
+
+    template<>
+    bp_command_request_t load(istream &stream, bool ntoh);
+
+    template<>
+    bp_raw_command_t load(istream &stream, bool ntoh);
+
+    template<>
+    bp_response_t load(istream &stream, bool ntoh);
+
+    template<>
+    bp_keep_alive_t load(istream &stream, bool ntoh);
+
+    ostream &operator<<(ostream &o, const ether_header_t &a);
+
+    ostream &operator<<(ostream &o, const ip_header_t &a);
+
+    ostream &operator<<(ostream &o, const udp_header_t &a);
+
+    ostream &operator<<(ostream &o, const bp_header_t &a);
+
+    ostream &operator<<(ostream &o, const bp_command_request_t &a);
+
+    ostream &operator<<(ostream &o, const bp_raw_command_t &a);
+
+    ostream &operator<<(ostream &o, const bp_response_t &a);
+
+    ostream &operator<<(ostream &o, const bp_keep_alive_t &a);
+
+    ostream &operator<<(ostream &o, unique_ptr<info_t> a);
 
     unique_ptr<info_t> parsePacket(Packet packet);
 

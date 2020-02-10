@@ -3,7 +3,8 @@
 using namespace std;
 
 #ifdef __unix__
-int RawSocketHelper::getInterfaceIndexAndInfo(const char* inter) {
+
+int RawSocketHelper::getInterfaceIndexAndInfo(const char *inter) {
     struct ifreq ifr = {0};
     struct ifreq macIfr = {0};
     memcpy(ifr.ifr_name, inter, strlen(inter));
@@ -18,8 +19,8 @@ int RawSocketHelper::getInterfaceIndexAndInfo(const char* inter) {
     }
     interfaceIndex = ifr.ifr_ifindex;
     memcpy(macAddress, macIfr.ifr_hwaddr.sa_data, 6);
-    printf("Interface uses MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n", 
-        macAddress[0], macAddress[1], macAddress[2], macAddress[3], macAddress[4], macAddress[5]);    
+    printf("Interface uses MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+           macAddress[0], macAddress[1], macAddress[2], macAddress[3], macAddress[4], macAddress[5]);
     return 0;
 }
 
@@ -46,7 +47,7 @@ int RawSocketHelper::setSocketOptions() {
     struct timeval tv{};
     tv.tv_sec = 0;
     tv.tv_usec = 100;
-    if(setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0){
+    if (setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, (const char *) &tv, sizeof tv) < 0) {
         perror("Setting socket options failed:");
         return -1;
     }
@@ -55,51 +56,106 @@ int RawSocketHelper::setSocketOptions() {
 }
 
 int RawSocketHelper::bindSocket() {
-    if(bind(sockFd, (struct sockaddr*) &addr, sizeof(addr)) < 0){
+    if (bind(sockFd, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
         perror("Binding to socket failed:");
         return -1;
     }
     return 0;
 }
 
-int RawSocketHelper::findOutwardFacingNIC(const char * destination_address){
-    sockaddr_storage addrOut = { 0 };
-    unsigned long addrDest = inet_addr( destination_address );
-    ( ( struct sockaddr_in * ) &addrOut)->sin_addr.s_addr = addrDest;
-    ( ( struct sockaddr_in * ) &addrOut)->sin_family = AF_INET;
-    ( ( struct sockaddr_in * ) &addrOut)->sin_port = htons( 9 );
+int RawSocketHelper::findOutwardFacingNIC(const char *destination_address) {
+    sockaddr_storage addrOut = {0};
+    unsigned long addrDest = inet_addr(destination_address);
+    ((struct sockaddr_in *) &addrOut)->sin_addr.s_addr = addrDest;
+    ((struct sockaddr_in *) &addrOut)->sin_family = AF_INET;
+    ((struct sockaddr_in *) &addrOut)->sin_port = htons(9);
 
-    int handle = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+    int handle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (handle < 0) {
         perror("Socket failed to create:");
         return -1;
     }
     socklen_t addrLen = sizeof(addrOut);
-    if(connect( handle, (sockaddr*)&addrOut, addrLen) != 0){
+    if (connect(handle, (sockaddr *) &addrOut, addrLen) != 0) {
         perror("Connecting failed:");
         return -1;
     }
-    if(getsockname(handle, (sockaddr*)&addrOut, &addrLen) != 0){
+    if (getsockname(handle, (sockaddr *) &addrOut, &addrLen) != 0) {
         perror("Get socket name failed:");
         return -1;
     }
-    char* source_address = inet_ntoa(((struct sockaddr_in *)&addrOut)->sin_addr);
-    struct ifaddrs* ifaddr;
-    struct ifaddrs* ifa;
+    char *source_address = inet_ntoa(((struct sockaddr_in *) &addrOut)->sin_addr);
+    struct ifaddrs *ifaddr;
+    struct ifaddrs *ifa;
     getifaddrs(&ifaddr);
-    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next){
-        if (ifa->ifa_addr && AF_INET == ifa->ifa_addr->sa_family){
-            auto* inaddr = (struct sockaddr_in*)ifa->ifa_addr;
-            if (inaddr->sin_addr.s_addr == ((struct sockaddr_in *)&addrOut)->sin_addr.s_addr && ifa->ifa_name){
+    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr && AF_INET == ifa->ifa_addr->sa_family) {
+            auto *inaddr = (struct sockaddr_in *) ifa->ifa_addr;
+            if (inaddr->sin_addr.s_addr == ((struct sockaddr_in *) &addrOut)->sin_addr.s_addr && ifa->ifa_name) {
                 cout << "Using interface " << ifa->ifa_name << " to bind to." << endl;
                 cout << "Interface uses IP: " << source_address << endl;
-                ipAddress = ((struct sockaddr_in *)&addrOut)->sin_addr.s_addr;
+                ipAddress = ((struct sockaddr_in *) &addrOut)->sin_addr.s_addr;
                 getInterfaceIndexAndInfo(ifa->ifa_name);
             }
         }
     }
     freeifaddrs(ifaddr);
     return 0;
+}
+
+vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
+    arp arpReq;
+    uint32_t networkTargetIP = htonl(targetIP);
+    memcpy(arpReq.sender_mac, macAddress, 6);
+    memcpy(arpReq.src_mac, macAddress, 6);
+    memcpy(arpReq.sender_ip, &ipAddress, 4);
+    memcpy(arpReq.target_ip, &networkTargetIP, 4);
+
+    auto arpReq_ptr = reinterpret_cast<uint8_t *>(&arpReq);
+    vector buf(arpReq_ptr, arpReq_ptr + sizeof(arpReq));
+
+    struct sockaddr_ll socket_address{};
+    memcpy(socket_address.sll_addr, macAddress, 6);
+    socket_address.sll_family = AF_PACKET;
+    socket_address.sll_protocol = htons(ETH_P_ARP);
+    socket_address.sll_ifindex = interfaceIndex;
+    socket_address.sll_hatype = htons(0x0001);
+    socket_address.sll_pkttype = (PACKET_BROADCAST);
+    socket_address.sll_halen = 6;
+    socket_address.sll_addr[6] = 0x00;
+    socket_address.sll_addr[7] = 0x00;
+    if (sendto(sockFd, buf.data(), buf.size(), 0, (struct sockaddr *) &socket_address, sizeof(socket_address)) < 0) {
+        perror("Send arp failed: ");
+        return vector<uint8_t>();
+    }
+
+    int attempts = 0;
+    while (true) {
+        unsigned char recvBuf[60];
+        arp arpResp{};
+        if (attempts > 5) {
+            if (sendto(sockFd, buf.data(), buf.size(), 0, (struct sockaddr *) &socket_address, sizeof(socket_address)) < 0) {
+                perror("Send arp failed: ");
+                return vector<uint8_t>();
+            }
+        }
+        int length = recv(sockFd, recvBuf, 60, 0);
+        if (length < 0) {
+            if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
+                perror("Receive arp failed:");
+                return vector<uint8_t>();
+            }
+        }
+        memcpy(&arpResp, recvBuf, sizeof(arpResp));
+        if (arpResp.type == htons(0x0806)) {
+            if (arpResp.opcode == htons(0x0002)) {
+                if (memcmp(&arpResp.target_ip, &networkTargetIP, 4) != 0) {
+                    return vector<uint8_t>(arpResp.sender_mac, arpResp.sender_mac + 6);
+                }
+            }
+        }
+        attempts++;
+    }
 }
 
 #elif defined(OS_Windows)

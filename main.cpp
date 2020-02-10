@@ -16,21 +16,24 @@ THIS IS FOR TESING OF THE RAWSOCKET LIBRARY NOT AN ACTUAL USEFUL PROGRAM.
 
 vector<RawSocket> socks;
 
-void cleanup(int i){
+void cleanup(int i) {
     cout << "Safely shutting down..." << endl;
     exit(i);
 }
 
-int main(){
+int main() {
     signal(SIGINT, cleanup);
 
-    #ifdef __unix__
-    socks.emplace_back(RawSocket("127.0.0.1", false, true));
-    #elif defined(OS_Windows)
+#ifdef __unix__
+    socks.emplace_back(RawSocket("8.8.8.8", false, true));
+#elif defined(OS_Windows)
     socks.push_back(RawSocket(false));
-    #endif
-    for (int m = 0;m < 10000; m++) {
-        for(auto sock: socks){
+#endif
+    for (int m = 0; m < 100; m++) {
+        for (auto sock: socks) {
+//            vector<uint8_t> mac = sock.getMacOfIP(0xc0a8016f);
+//            for (auto val : mac) printf("%.2x", val);
+
             sock.receive();
             Packet pack = sock.getPacket();
             unique_ptr<info_t> info = parsePacket(pack);
@@ -46,14 +49,15 @@ int main(){
 
             bp_command_request_header.target_OS = 0x01;
 
-            uint16_t udp_len = (uint16_t)sizeof(bpHeader) + (uint16_t)sizeof(bp_command_request_header) + (uint16_t)sizeof(udp_header);
+            uint16_t udp_len = (uint16_t) sizeof(bpHeader) + (uint16_t) sizeof(bp_command_request_header) +
+                               (uint16_t) sizeof(udp_header);
             udp_header.length = htons(udp_len);
             udp_header.dst_port = htons(1337);
             udp_header.src_port = htons(1337);
             udp_header.checksum = htons(0xDEAD);
 
             ip_header.ver_ihl = 0x45;
-            ip_header.total_length = htons(udp_len + (uint16_t)sizeof(ip_header));
+            ip_header.total_length = htons(udp_len + (uint16_t) sizeof(ip_header));
             ip_header.id = htons(0xda80);
             ip_header.flags_fo = htons(0x0000);
             ip_header.ttl = 0x80;
@@ -64,18 +68,18 @@ int main(){
             ip_header.dst_addr = htonl(0xc0a80194);
 
 #ifdef __unix__
-           //TODO Do this for the user.
-           const uint8_t dst[] = { 0xFF, 0xF8, 0xFF, 0xFF, 0xFF, 0xFF };
-           const uint8_t src[] = { 0x12, 0x34, 0x00, 0x78, 0xAC, 0xDC };
-           memcpy(ether_header.dst_mac, dst, 6);
-           memcpy(ether_header.src_mac, src, 6);
-           ether_header.type = htons(0x0800);
-           auto ether_ptr = reinterpret_cast<unsigned char *>(&ether_header);
+            //TODO Do this for the user.
+            const uint8_t dst[] = {0xFF, 0xF8, 0xFF, 0xFF, 0xFF, 0xFF};
+            const uint8_t src[] = {0x12, 0x34, 0x00, 0x78, 0xAC, 0xDC};
+            memcpy(ether_header.dst_mac, dst, 6);
+            memcpy(ether_header.src_mac, src, 6);
+            ether_header.type = htons(0x0800);
+            auto ether_ptr = reinterpret_cast<unsigned char *>(&ether_header);
 #endif
 
             auto ip_ptr = reinterpret_cast<unsigned char *>(&ip_header);
             auto udp_ptr = reinterpret_cast<unsigned char *>(&udp_header);
-            auto bp_header_ptr = reinterpret_cast<unsigned  char *>(&bpHeader);
+            auto bp_header_ptr = reinterpret_cast<unsigned char *>(&bpHeader);
             auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_command_request_header);
 #ifdef __unix__
             Packet meep(ether_ptr, ether_ptr + sizeof(ether_header));

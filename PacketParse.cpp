@@ -99,7 +99,7 @@ namespace PacketParse {
     }
 
     ostream &operator<<(ostream &o, unique_ptr<info_t> a) {
-        if(a == nullptr){
+        if (a == nullptr) {
             return o;
         }
         o << a->etherHeader << endl;
@@ -176,7 +176,8 @@ namespace PacketParse {
         return header;
     }
 
-    template<> bp_keep_alive_t load(istream& stream, bool){
+    template<>
+    bp_keep_alive_t load(istream &stream, bool) {
         bp_keep_alive_t header{};
         stream.read((char *) &header, sizeof(header));
         return header;

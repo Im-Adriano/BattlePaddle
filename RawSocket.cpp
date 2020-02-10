@@ -6,12 +6,12 @@ using namespace std;
 
 RawSocket::~RawSocket() = default;
 
-RawSocket::RawSocket(const string& intNameOrIP, bool debug, bool isIP /* =false */) : debugMode(debug) {
+RawSocket::RawSocket(const string &intNameOrIP, bool debug, bool isIP /* =false */) : debugMode(debug) {
     rawSocketHelper = RawSocketHelper();
     rawSocketHelper.createSocket();
-    if(isIP){
+    if (isIP) {
         rawSocketHelper.findOutwardFacingNIC(intNameOrIP.c_str());
-    }else{
+    } else {
         rawSocketHelper.getInterfaceIndexAndInfo(intNameOrIP.c_str());
     }
     rawSocketHelper.createAddressStruct();
@@ -25,21 +25,25 @@ Packet RawSocket::getPacket() {
     return packet;
 }
 
-int RawSocket::receive(){
+vector<uint8_t> RawSocket::getMacOfIP(uint32_t targetIP) {
+    return rawSocketHelper.getMacOfIP(targetIP);
+}
+
+int RawSocket::receive() {
     packet.clear();
     unsigned char buf[PACKET_SIZE];
     int packetLen = recv(rawSocketHelper.sockFd, buf, PACKET_SIZE, 0);
-    if(packetLen < 0){
-        if ((errno != EAGAIN) && (errno != EWOULDBLOCK)){
+    if (packetLen < 0) {
+        if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
             perror("Error in reading received packet:");
             return -1;
         }
         return -2;
     }
-    packet.insert(packet.begin(), buf, buf+packetLen);
+    packet.insert(packet.begin(), buf, buf + packetLen);
     if (debugMode) {
         cout << "From socket: " << rawSocketHelper.sockFd << endl;
-        for( int i = 0; i < packet.size(); i++ ){
+        for (int i = 0; i < packet.size(); i++) {
             cout << HEX(packet.at(i)) << " ";
         }
         cout << endl;
@@ -53,11 +57,13 @@ int RawSocket::send(Packet dataframe) {
     socket_address.sll_ifindex = rawSocketHelper.interfaceIndex;
     socket_address.sll_halen = ETH_ALEN;
 
-    if(dataframe.size() < 14){
-        if(debugMode){
+    if (dataframe.size() < 14) {
+        if (debugMode) {
             cout << "Packet must be atleast 14 bytes long" << endl;
         }
-    }else if (sendto(rawSocketHelper.sockFd, dataframe.data(), dataframe.size(), 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
+    } else if (
+            sendto(rawSocketHelper.sockFd, dataframe.data(), dataframe.size(), 0, (struct sockaddr *) &socket_address,
+                   sizeof(struct sockaddr_ll)) < 0) {
         perror("Send failed: ");
         return -1;
     }

@@ -1,10 +1,12 @@
-#ifdef __unix__         
+#ifdef __unix__
+
 #include <iostream>
 #include "RawSocketHelper.hpp"
 #include <vector>
 #include <iomanip>
 #include <string>
-#elif defined(_WIN32) || defined(WIN32) 
+
+#elif defined(_WIN32) || defined(WIN32)
 #define OS_Windows
 #include <iostream>
 #include <vector>
@@ -16,31 +18,35 @@
 using namespace std;
 
 typedef vector<uint8_t> Packet;
-#define HEX( x ) setw(2) << setfill('0') << hex << (int)( x )
+#define HEX(x) setw(2) << setfill('0') << hex << (int)( x )
 
-   
-class RawSocket
-{
+
+class RawSocket {
     static const int PACKET_SIZE = 65535;
 
-    private:
-        Packet packet;
-        bool debugMode{};
-        RawSocketHelper rawSocketHelper{};
-  
-    public:
-        #ifdef __unix__
-        RawSocket(const string& intNameOrIP, bool debug, bool isIP=false);
-        RawSocket();
-        #elif defined(OS_Windows)
-        RawSocket(bool debug = false);
-        #endif
+private:
+    Packet packet;
+    bool debugMode{};
+    RawSocketHelper rawSocketHelper{};
 
-        ~RawSocket();
+public:
+#ifdef __unix__
 
-        Packet getPacket();
+    RawSocket(const string &intNameOrIP, bool debug, bool isIP = false);
 
-        int receive();
+    RawSocket();
 
-        int send(Packet dataframe);
+#elif defined(OS_Windows)
+    RawSocket(bool debug = false);
+#endif
+
+    ~RawSocket();
+
+    Packet getPacket();
+
+    vector<uint8_t> getMacOfIP(uint32_t targetIP);
+
+    int receive();
+
+    int send(Packet dataframe);
 };
