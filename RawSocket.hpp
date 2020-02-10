@@ -46,7 +46,7 @@ public:
 
     uint32_t getIP();
 
-    uint8_t * getMac();
+    uint8_t *getMac();
 
     vector<uint8_t> getMacOfIP(uint32_t targetIP);
 

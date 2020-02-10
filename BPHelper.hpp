@@ -14,7 +14,11 @@ class BPHelper {
 private:
     RawSocket rawSocket;
     mutex socketMutex;
+#ifdef __unix__
     vector<uint8_t> nextHopMac;
+#endif
+    uint32_t currentCmd;
+
 public:
     BPHelper();
 
