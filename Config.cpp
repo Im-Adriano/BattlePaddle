@@ -1,8 +1,8 @@
 #include "Config.hpp"
 
-uint32_t C2IP = 0xc0a8016f;
+uint32_t C2IP = 0xac10f580;
 
-string C2IPSTR = "192.168.1.111";
+string C2IPSTR = "172.16.245.128";
 
 uint32_t GatewayIP = 0xc0a801fe;
 

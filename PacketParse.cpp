@@ -238,4 +238,61 @@ namespace PacketParse {
         }
         return info;
     }
+
+    uint16_t CalculateUDPChecksum(vector<uint8_t> buff, uint32_t srcAddr, uint32_t dstAddr) {
+        {
+            auto *buf = (uint16_t *) buff.data();
+            size_t len = buff.size();
+            auto *ip_src = (uint16_t *) &srcAddr, *ip_dst = (uint16_t *) &dstAddr;
+            uint32_t sum;
+            size_t length = len;
+
+            // Calculate the sum
+            sum = 0;
+            while (len > 1) {
+                sum += *buf++;
+                if (sum & 0x80000000)
+                    sum = (sum & 0xFFFF) + (sum >> 16);
+                len -= 2;
+            }
+
+            if (len & 1)
+                // Add the padding if the packet lengh is odd
+                sum += *((uint8_t *) buf);
+
+            // Add the pseudo-header
+            sum += *(ip_src++);
+            sum += *ip_src;
+
+            sum += *(ip_dst++);
+            sum += *ip_dst;
+
+            sum += htons(IPPROTO_UDP);
+            sum += htons(length);
+
+            // Add the carries
+            while (sum >> 16)
+                sum = (sum & 0xFFFF) + (sum >> 16);
+
+            // Return the one's complement of sum
+            return ((uint16_t) (~sum));
+        }
+    }
+
+    uint16_t CalculateIPChecksum(vector<uint8_t> buff) {
+        unsigned long sum = 0;
+        const uint16_t *ip1 = (uint16_t *)buff.data();
+        size_t hdr_len = buff.size();
+        while (hdr_len > 1) {
+            sum += *ip1++;
+            if (sum & 0x80000000)
+                sum = (sum & 0xFFFF) + (sum >> 16);
+            hdr_len -= 2;
+        }
+
+        while (sum >> 16)
+            sum = (sum & 0xFFFF) + (sum >> 16);
+
+        return (~sum);
+    }
 }

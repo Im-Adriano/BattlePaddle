@@ -42,12 +42,12 @@ void BPHelper::requestAction() {
     udp_header.length = htons(udp_len);
     udp_header.dst_port = htons(1337);
     udp_header.src_port = htons(1337);
-    udp_header.checksum = htons(0xDEAD);
+    udp_header.checksum = htons(0xFFFF);
 
     ip_header.ver_ihl = 0x45;
     ip_header.total_length = htons(udp_len + (uint16_t) sizeof(ip_header));
     ip_header.id = htons(0xda80);
-    ip_header.flags_fo = htons(0x0000);
+    ip_header.flags_fo = htons(0x4000);
     ip_header.ttl = 0x80;
     ip_header.protocol = 0x11;
     ip_header.checksum = htons(0x0000);
@@ -67,6 +67,12 @@ void BPHelper::requestAction() {
     auto bp_header_ptr = reinterpret_cast<unsigned char *>(&bpHeader);
     auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_command_request_header);
 
+    vector<uint8_t> tempIP(ip_ptr, ip_ptr + sizeof(ip_header));
+    ip_header.checksum = CalculateIPChecksum(tempIP);
+
+    vector<uint8_t> tempUDP(udp_ptr, udp_ptr + sizeof(udp_header));
+    udp_header.checksum = CalculateUDPChecksum(tempUDP, ip_header.src_addr, ip_header.dst_addr);
+
 #ifdef __unix__
     Packet req(ether_ptr, ether_ptr + sizeof(ether_header));
     req.insert(req.end(), ip_ptr, ip_ptr + sizeof(ip_header));
@@ -79,7 +85,9 @@ void BPHelper::requestAction() {
 
 #if defined(_WIN32) || defined(WIN32)
     //Firewall Flick
+    socketMutex.lock();
     rawSocket.send(req);
+    socketMutex.unlock();
 #else
     socketMutex.lock();
     rawSocket.send(req);
@@ -107,7 +115,7 @@ void BPHelper::Receive() {
         Packet packet = rawSocket.getPacket();
         if (!packet.empty()) {
             unique_ptr<info_t> info = parsePacket(packet);
-            if (info->bpHeader.magic_bytes == ntohl(MAGIC_BYTES)) {
+            if (info->bpHeader.magic_bytes == MAGIC_BYTES) {
                 socketMutex.lock();
                 //actionResponse(move(info));
                 cout << move(info) << endl;
