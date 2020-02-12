@@ -1,7 +1,5 @@
 #include "PacketCraft.hpp"
 
-#ifdef __unix__
-
 uint16_t CalculateIPChecksum(vector<uint8_t> buff) {
     unsigned long sum = 0;
     const uint16_t *ip1 = (uint16_t *) buff.data();
@@ -18,8 +16,6 @@ uint16_t CalculateIPChecksum(vector<uint8_t> buff) {
 
     return (~sum);
 }
-
-#endif
 
 uint16_t CalculateUDPChecksum(vector<uint8_t> buff, uint32_t srcAddr, uint32_t dstAddr) {
     auto *buf = (uint16_t *) buff.data();

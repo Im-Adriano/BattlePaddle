@@ -18,11 +18,8 @@
 using namespace std;
 using namespace PacketParse;
 
-#ifdef __unix__
 
 uint16_t CalculateIPChecksum(vector<uint8_t> buff);
-
-#endif
 
 uint16_t CalculateUDPChecksum(vector<uint8_t> buff, uint32_t srcAddr, uint32_t dstAddr);
 
