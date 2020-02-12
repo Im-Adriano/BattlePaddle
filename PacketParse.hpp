@@ -147,9 +147,4 @@ namespace PacketParse {
     ostream &operator<<(ostream &o, unique_ptr<info_t> a);
 
     unique_ptr<info_t> parsePacket(Packet packet);
-
-    uint16_t CalculateUDPChecksum(vector<uint8_t> buff, uint32_t srcAddr, uint32_t dstAddr);
-
-    uint16_t CalculateIPChecksum(vector<uint8_t> buff);
-
 }

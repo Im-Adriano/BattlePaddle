@@ -6,14 +6,19 @@ using namespace std;
 
 RawSocket::~RawSocket() = default;
 
-RawSocket::RawSocket(const string &intNameOrIP, bool debug, bool isIP /* =false */) : debugMode(debug) {
+RawSocket::RawSocket(const string &intName, bool debug) : debugMode(debug) {
     rawSocketHelper = RawSocketHelper();
     rawSocketHelper.createSocket();
-    if (isIP) {
-        rawSocketHelper.findOutwardFacingNIC(intNameOrIP.c_str());
-    } else {
-        rawSocketHelper.getInterfaceIndexAndInfo(intNameOrIP.c_str());
-    }
+    rawSocketHelper.getInterfaceIndexAndInfo(intName.c_str());
+    rawSocketHelper.createAddressStruct();
+    rawSocketHelper.setSocketOptions();
+    rawSocketHelper.bindSocket();
+}
+
+RawSocket::RawSocket(const uint32_t IP, bool debug) : debugMode(debug) {
+    rawSocketHelper = RawSocketHelper();
+    rawSocketHelper.createSocket();
+    rawSocketHelper.findOutwardFacingNIC(IP);
     rawSocketHelper.createAddressStruct();
     rawSocketHelper.setSocketOptions();
     rawSocketHelper.bindSocket();
@@ -74,7 +79,7 @@ uint32_t RawSocket::getIP() {
     return rawSocketHelper.ipAddress;
 }
 
-uint8_t *RawSocket::getMac() {
+vector<uint8_t> RawSocket::getMac() {
     return rawSocketHelper.macAddress;
 }
 

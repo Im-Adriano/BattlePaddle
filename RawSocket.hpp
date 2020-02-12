@@ -36,7 +36,9 @@ private:
 public:
 #ifdef __unix__
 
-    RawSocket(const string &intNameOrIP, bool debug, bool isIP = false);
+    explicit RawSocket(const string &intName, bool debug = false);
+
+    explicit RawSocket(uint32_t IP, bool debug = false);
 
     RawSocket();
 
@@ -52,7 +54,7 @@ public:
 
     uint32_t getIP();
 
-    uint8_t *getMac();
+    vector<uint8_t> getMac();
 
     vector<uint8_t> getMacOfIP(uint32_t targetIP);
 

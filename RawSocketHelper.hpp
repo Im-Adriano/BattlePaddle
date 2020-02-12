@@ -42,7 +42,7 @@ public:
     int interfaceIndex;
     int sockFd;
     struct sockaddr_ll addr;
-    uint8_t macAddress[6];
+    vector<uint8_t> macAddress;
     uint32_t ipAddress;
 
     int getInterfaceIndexAndInfo(const char *inter);
@@ -55,7 +55,7 @@ public:
 
     int bindSocket();
 
-    int findOutwardFacingNIC(const char *destination_address);
+    int findOutwardFacingNIC(uint32_t destination_address);
 
     vector<uint8_t> getMacOfIP(uint32_t targetIP);
 };
