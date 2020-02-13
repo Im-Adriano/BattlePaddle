@@ -8,34 +8,43 @@ import socket
 import random
 from multiprocessing import Process, Pipe, Manager
 from time import sleep
-import sys
+
+
+MAGIC_BYTES = b'\x42\x50\x3c\x33'
+REQUEST_BYTE = b'\x01'
+RAW_COMMAND_BYTE = b'\x02'
+RESPONSE_BYTE = b'\x03'
+KEEP_ALIVE_BYTE = b'\x04'
+RAW_COMMAND = MAGIC_BYTES + b'\x02\x01'
 
 
 def socket_listen(targets, responses, pipe):
-    MAGIC_BYTES = b'\x42\x50\x3c\x33'
-    REQUEST_BYTE = b'\x01'
-    RAW_COMMAND = MAGIC_BYTES +  b'\x02\x01'
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_address = ('172.16.245.1', 1337)
+    server_address = ('127.0.0.1', 1337)
     sock.bind(server_address)
-    targetCmds = {}
+    target_cmds = {}
     while True:
         data, addr = sock.recvfrom(4096)
-        addrBytes = bytes(map(int, addr[0].split('.')))
-        if pipe.poll():
-            targetCmds = pipe.recv()
-        if addr[0] not in targets:
+        cur_target = addr[0]
+        target_address = bytes(map(int, cur_target.split('.')))
+        cmd_num = bytes(data[7:11])
+        if pipe.poll() and len(target_cmds) == 0:
+            target_cmds = pipe.recv()
+        if cur_target not in targets:
             targets.append(addr[0])
         if MAGIC_BYTES in data[0:4] and REQUEST_BYTE == data[4:5]:
             try:
-                for cmd in targetCmds[addr[0]]:
-                    packet = b'' + RAW_COMMAND + bytes(data[7:11]) + bytes(len(cmd)) + bytes(cmd, 'utf-8')
-                    ret = sock.sendto(packet, addr)
-                targetCmds.pop(addr[0])
+                for cmd in target_cmds[cur_target]:
+                    cmd = bytes(cmd, 'utf-8')
+                    length = bytes(len(cmd))
+                    packet = MAGIC_BYTES + RAW_COMMAND_BYTE + b'\x01' + cmd_num + target_address + length + cmd
+                    sock.sendto(packet, addr)
+                target_cmds.pop(cur_target)
             except KeyError:
-                #Send keep alive
+                # Send keep alive
                 pass
         sleep(.01)
+
 
 f = Figlet(font=random.choice(Figlet().getFonts()))
 f.width = 999
@@ -43,32 +52,32 @@ print(f.renderText('Battle Paddle'))
 
 manager = Manager()
 
-targets = manager.list()
+discovered_targets = manager.list()
 
 executeCommands = {}
 responses = manager.dict()
 parentEnd, childEnd = Pipe()
 
-p = Process(target=socket_listen, args=(targets, responses, childEnd))
+p = Process(target=socket_listen, args=(discovered_targets, responses, childEnd))
 p.start()
 
 groups = {}
 stagedCommands = {}
 
-targetCompleter = WordCompleter(targets)
-groupCompleter = WordCompleter(groups.keys())
-stagedCommandsCompleter = WordCompleter(stagedCommands.keys())
+targetCompleter = WordCompleter(discovered_targets)
+groupCompleter = WordCompleter(groups)
+stagedCommandsCompleter = WordCompleter(stagedCommands)
 
-mainCommandsDict =   {
+mainCommandsDict = {
     "show": {
-        "targets": None, 
+        "targets": None,
         "info": None,
         "groups": None,
         "staged": {
             "commands": None
         }
     },
-    "set" : {
+    "set": {
         "name": None,
         "target": {
             "group": groupCompleter,
@@ -76,20 +85,20 @@ mainCommandsDict =   {
         },
         "command": None
     },
-    "del":{
+    "del": {
         "group": groupCompleter
     },
-    "create":{
+    "create": {
         "group": None
     },
-    "edit":{
+    "edit": {
         "group": groupCompleter
     },
     "clear": None,
     "stage": None,
-    "execute" : stagedCommandsCompleter,
-    "save" : None,
-    "load" : None,
+    "execute": stagedCommandsCompleter,
+    "save": None,
+    "load": None,
     "exit": None,
 }
 
@@ -104,6 +113,7 @@ completer = NestedCompleter.from_nested_dict(
 completerGroupEdit = NestedCompleter.from_nested_dict(
     groupCommandsDict
 )
+
 
 def is_valid_main(text):
     d = mainCommandsDict
@@ -123,7 +133,7 @@ def is_valid_main(text):
     if d is not None and not isinstance(d, WordCompleter):
         return False
     return True
-            
+
 
 def is_valid_group(text):
     d = groupCommandsDict
@@ -157,11 +167,11 @@ validatorGroup = Validator.from_callable(
     move_cursor_to_end=True,
 )
 
-target = set()
-commands = list()
-commandName = ''
+stage_target = set()
+stage_commands = list()
+stage_command_name = ''
 
-toolbarStr = f'Name: {commandName} Target: {list(target)} Commands: {commands}'
+toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
 
 try:
     while 1:
@@ -169,51 +179,52 @@ try:
                             history=FileHistory('history.txt'),
                             auto_suggest=AutoSuggestFromHistory(),
                             completer=completer,
-                            lexer=None,
                             bottom_toolbar=toolbarStr,
                             validator=validatorMain,
                             validate_while_typing=False
                             )
 
-        if user_input == '':
-            toolbarStr =  f'Name: {commandName} Target: {list(target)} Commands: {commands}'
-        elif 'show targets' in user_input:
-            print(f'Known targets {targets}')
+        # if user_input == '':
+        #     toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
+        if 'show targets' in user_input:
+            print(f'Known targets {discovered_targets}')
         elif 'show info' in user_input:
             print(f'Still working on')
         elif 'show groups' in user_input:
             print(f'Groups: {groups}')
         elif 'show staged commands' in user_input:
             print('Staged commands:')
-            for k,v in stagedCommands.items():
+            for k, v in stagedCommands.items():
                 print(f'Stage name:{k} -> {v}')
         elif 'set target group' in user_input:
-            target.clear()
+            stage_target.clear()
             s = user_input.strip().split('set target group ')
             if len(s) > 1:
-                _, groupName = s
-                for g in groupName.split(' ') : target.add(g)
-            toolbarStr = f'Name: {commandName} Target: {list(target)} Commands: {commands}'
+                _, target_group = s
+                for g in target_group.split(' '):
+                    stage_target.add(g)
+            toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
         elif 'set name' in user_input:
-            name = ''
+            cmd_name = ''
             s = user_input.strip().split('set name ')
             if len(s) > 1:
-                _, name = s
-                commandName = name.split(' ')[0]
-            toolbarStr = f'Name: {commandName} Target: {list(target)} Commands: {commands}'
+                _, cmd_name = s
+                stage_command_name = cmd_name.split(' ')[0]
+            toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
         elif 'set target list' in user_input:
-            target.clear()
+            stage_target.clear()
             s = user_input.strip().split('set target list ')
             if len(s) > 1:
-                _, tar = s
-                for t in tar.split(' ') : target.add(t)
-            toolbarStr = f'Name: {commandName} Target: {list(target)} Commands: {commands}'
+                _, target = s
+                for exec_targets in target.split(' '):
+                    stage_target.add(exec_targets)
+            toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
         elif 'set command' in user_input:
             s = user_input.strip().split('set command ')
             if len(s) > 1:
                 _, c = s
-                commands.append(c)
-            toolbarStr = f'Name: {commandName} Target: {list(target)} Commands: {commands}'
+                stage_commands.append(c)
+            toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
         elif 'del group' in user_input:
             s = user_input.strip().split('del group ')
             if len(s) > 1:
@@ -230,48 +241,49 @@ try:
                 _, group = s
                 group = group.split(' ')[0]
                 group_input = prompt(f'[Edit group {group}]\nBP> ',
-                                history=FileHistory('history.txt'),
-                                auto_suggest=AutoSuggestFromHistory(),
-                                completer=completerGroupEdit,
-                                bottom_toolbar=toolbarStr,
-                                validator=validatorGroup,
-                                validate_while_typing=False
-                                )
+                                     history=FileHistory('history.txt'),
+                                     auto_suggest=AutoSuggestFromHistory(),
+                                     completer=completerGroupEdit,
+                                     bottom_toolbar=toolbarStr,
+                                     validator=validatorGroup,
+                                     validate_while_typing=False
+                                     )
                 if 'add' in group_input:
                     u = group_input.strip().split('add ')
                     if len(u) > 1:
-                        _, tar = u
-                        for t in tar.split(' ') : groups[group].add(t)
+                        _, target = u
+                        for exec_targets in target.split(' '):
+                            groups[group].add(exec_targets)
         elif 'clear' in user_input:
-            target.clear()
-            commands.clear()
-            commandName = ''
-            toolbarStr =  f'Name: {commandName} Target: {list(target)} Commands: {commands}'
+            stage_target.clear()
+            stage_commands.clear()
+            stage_command_name = ''
+            toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
         elif 'execute' in user_input:
             executeCommands = {}
             s = user_input.strip().split('execute ')
             if len(s) > 1:
                 _, stages = s
-                for st in stages.split(' '):
-                    t = stagedCommands[st]['target']
-                    for ts in t:
-                        if ts in groups:
-                            for tar in groups[ts]:
-                                executeCommands[ts] = stagedCommands[st]['commands']
+                for stage in stages.split(' '):
+                    exec_targets = stagedCommands[stage]['target']
+                    for exec_target in exec_targets:
+                        if exec_target in groups:
+                            for target in groups[exec_target]:
+                                executeCommands[exec_target] = stagedCommands[stage]['commands']
                         else:
-                            executeCommands[ts] = stagedCommands[st]['commands']
+                            executeCommands[exec_target] = stagedCommands[stage]['commands']
             parentEnd.send(executeCommands)
         elif 'stage' in user_input:
-            if commandName == '' or len(commands) == 0 or len(target) == 0:
+            if stage_command_name == '' or len(stage_commands) == 0 or len(stage_target) == 0:
                 print('Command is not ready to be staged')
-            stagedCommands[commandName] = {
-                "commands": commands.copy(),
-                "target": target.copy()
+            stagedCommands[stage_command_name] = {
+                "commands": stage_commands.copy(),
+                "target": stage_target.copy()
             }
-            commandName = ''
-            commands.clear()
-            target.clear()
-            toolbarStr = f'Name: {commandName} Target: {list(target)} Commands: {commands}'
+            stage_command_name = ''
+            stage_commands.clear()
+            stage_target.clear()
+            toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
         elif 'save' in user_input:
             print('To be implemented')
         elif 'load' in user_input:
@@ -281,8 +293,7 @@ try:
             p.kill()
             exit()
         else:
-            toolbarStr =  f'Name: {commandName} Target: {list(target)} Commands: {commands}'
-        print()
+            toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
 except (KeyboardInterrupt, EOFError):
     print(f.renderText('GG'))
     p.kill()
