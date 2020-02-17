@@ -49,7 +49,7 @@ uint16_t CalculateUDPChecksum(vector<uint8_t> buff, uint32_t srcAddr, uint32_t d
 }
 
 vector<uint8_t>
-CraftUDPPacket(uint32_t srcAddr, uint32_t dstAddr, uint16_t srcPort, uint16_t dstPort, vector<uint8_t> payload,
+CraftUDPPacket(const uint32_t srcAddr, const uint32_t dstAddr, uint16_t srcPort, uint16_t dstPort, vector<uint8_t> payload,
                vector<uint8_t> srcMac, vector<uint8_t> dstMac) {
     ether_header_t ether_header{};
     ip_header_t ip_header{};

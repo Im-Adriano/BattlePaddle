@@ -8,13 +8,16 @@
 #include <functional>
 #include <mutex>
 
+#if defined(_WIN32) || defined(WIN32)
+#include "executeCommand.hpp"
+#endif
+
 using namespace PacketParse;
 using namespace std;
 
 class BPHelper {
 private:
     RawSocket rawSocket;
-    mutex socketMutex;
 #ifdef __unix__
     vector<uint8_t> nextHopMac;
 #endif
