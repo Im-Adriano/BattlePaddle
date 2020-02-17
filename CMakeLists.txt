@@ -1,14 +1,18 @@
 cmake_minimum_required (VERSION 2.6)
 project (main)
-SET( CMAKE_CXX_STANDARD 20)
+SET( CMAKE_CXX_STANDARD 17)
 find_package(Threads)
-SET(CMAKE_CXX_FLAGS -pthread)
 SET( CMAKE_BUILD_TYPE debug )
 
 file(GLOB SRC
     "*.hpp"
     "*.cpp"
 )
+
+SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+SET(BUILD_SHARED_LIBS OFF)
+SET(CMAKE_EXE_LINKER_FLAGS "-static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive")
+
 add_executable(main ${SRC})
 
 if (WIN32)
