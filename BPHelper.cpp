@@ -41,7 +41,7 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
             bp_response.host_ip = rawSocket.getIP();
             bp_response.command_num = htonl(currentCmd);
             memcpy(bp_response.data, output.c_str(), 500);
-            bp_response.data_len = output.length();
+            bp_response.data_len = htons(static_cast<uint16_t>(output.length()));
 
             auto bp_header_ptr = reinterpret_cast<unsigned char *>(&bpHeader);
             auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_response);

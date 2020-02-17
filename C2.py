@@ -47,8 +47,8 @@ def socket_listen(targets, pipe):
                 packet = MAGIC_BYTES + KEEP_ALIVE_BYTE + b'\x01' + cmd_num + target_address
                 sock.sendto(packet, addr)
         elif MAGIC_BYTES in data[0:4] and RESPONSE_BYTE == data[4:5]:
-            response_len = int.from_bytes(data[14:16], byteorder='big')
-            response = data[16:16+response_len].decode('utf-8')
+            response_len = int.from_bytes(data[13:15], byteorder='big')
+            response = data[15:15+response_len].decode('utf-8')
             target_responses[cur_target].append(response)
             pipe.send(target_responses)
         sleep(.01)
