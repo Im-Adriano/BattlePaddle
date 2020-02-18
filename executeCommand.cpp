@@ -1,13 +1,6 @@
-#if defined(_WIN32) || defined(WIN32)
-
 #include "executeCommand.hpp"
-#include <stdlib.h>
-#include <string.h>
 
-#define MAX_WAIT 5000  // Wait for 5 seconds.  Used in ExecuteCommand
-#define BUFLEN 4096  // Used in ExecuteCommand
-
-#include "time.hpp"
+#if defined(_WIN32) || defined(WIN32)
 
 std::unique_ptr<CommandResult> RunCommand(std::string command, std::string arguments) {
     auto result = std::make_unique<CommandResult>();
@@ -139,5 +132,20 @@ std::unique_ptr<CommandResult> RunCommand(std::string command, std::string argum
     return result;
 }
 
+
+#else
+
+std::string exec(const char *cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
 
 #endif

@@ -86,6 +86,7 @@ CraftUDPPacket(const uint32_t srcAddr, const uint32_t dstAddr, uint16_t srcPort,
     ip_header.checksum = CalculateIPChecksum(tempIP);
 
     vector<uint8_t> tempUDP(udp_ptr, udp_ptr + sizeof(udp_header));
+    tempUDP.insert(tempUDP.end(), payload.begin(), payload.end());
     udp_header.checksum = CalculateUDPChecksum(tempUDP, ip_header.src_addr, ip_header.dst_addr);
 
 #ifdef __unix__
