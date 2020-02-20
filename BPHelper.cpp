@@ -128,7 +128,7 @@ BPHelper::BPHelper() {
 #ifdef __unix__
     rawSocket = RawSocket(C2IP);
     if (useGateway) {
-        nextHopMac = rawSocket.getMacOfIP(GatewayIP);
+        nextHopMac = rawSocket.getMacOfIP(ntohl(GatewayIP));
     } else {
         nextHopMac = rawSocket.getMacOfIP(ntohl(C2IP));
     }
