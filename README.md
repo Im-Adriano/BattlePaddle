@@ -1,4 +1,5 @@
 # BattlePaddle
+Still in alpha
 
 ## What is it?
 
