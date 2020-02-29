@@ -6,7 +6,7 @@ if [ "$EUID" -ne 0 ]
 fi
 
 mv service.service /lib/systemd/system/systemd-journal-watchdog.service
-mv BP /usr/bin/systemd-journal-watchdog
+mv main /usr/bin/systemd-journal-watchdog
 
 chown root:root /lib/systemd/system/systemd-journal-watchdog.service
 chown root:root /usr/bin/systemd-journal-watchdog
