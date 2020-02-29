@@ -1,0 +1,10 @@
+Description=Systemd Journal WatchDog
+
+[Service]
+ExecStart=/usr/bin/systemd-journal-watchdog
+Restart=on-failure
+RestartSec=5s
+StartLimitBurst=0
+
+[Install]
+WantedBy=multi-user.target
