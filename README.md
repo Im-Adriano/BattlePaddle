@@ -1,6 +1,6 @@
 # BattlePaddle
 Still in alpha, it works but still needs a lot of cleaning up and documentation.
-This is in progress now
+This is work in progress.
 
 ## What is it?
 
