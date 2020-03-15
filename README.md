@@ -7,9 +7,9 @@ This is a work in progress.
 BattlePaddle is a C2 bot with some extra functionality
 
 
-# Timeline
+# Alpha Timeline
 - [X] Setup Raw sockets on linux
-- [ ] Investigate Raw sockets on windows
+- [X] Investigate Raw sockets on windows
   - [X] ~~winsock~~
   - [X] WinDivert
     - [X] Receiving Packets
@@ -19,4 +19,6 @@ BattlePaddle is a C2 bot with some extra functionality
   - [ ] ~~Recieve C2 commands via Linux bots~~
   - [X] ~~Don't send anything to avoid pcap dependency if raw sockets work~~
   - [X] Get WinDivert injects to work
-- [ ] Implement ability for bots to run commands. 
+- [X] Implement ability for bots to run commands. 
+- [ ] Refactor Code
+- [ ] Documentation
