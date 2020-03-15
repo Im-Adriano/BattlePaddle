@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 
 #elif defined(_WIN32) || defined(WIN32)
-#include "WinDivert\windivert.h"
+#include "windivert.h"
 #define ntohs(x) WinDivertHelperNtohs(x)
 #define ntohl(x) WinDivertHelperNtohl(x)
 #define htons(x) WinDivertHelperHtons(x)
@@ -20,9 +20,7 @@
 #endif
 
 
-using namespace std;
-
-typedef vector<uint8_t> Packet;
+typedef std::vector<uint8_t> Packet;
 
 namespace PacketParse {
     const uint32_t MAGIC_BYTES = 0x42503c33; // BP<3
@@ -102,49 +100,49 @@ namespace PacketParse {
 #pragma pack(pop)
 
     template<typename T>
-    T load(istream &stream, bool ntoh = true);
+    T load(std::istream &stream, bool ntoh = true);
 
     template<>
-    ether_header_t load(istream &stream, bool ntoh);
+    ether_header_t load(std::istream &stream, bool ntoh);
 
     template<>
-    ip_header_t load(istream &stream, bool ntoh);
+    ip_header_t load(std::istream &stream, bool ntoh);
 
     template<>
-    udp_header_t load(istream &stream, bool ntoh);
+    udp_header_t load(std::istream &stream, bool ntoh);
 
     template<>
-    bp_header_t load(istream &stream, bool ntoh);
+    bp_header_t load(std::istream &stream, bool ntoh);
 
     template<>
-    bp_command_request_t load(istream &stream, bool ntoh);
+    bp_command_request_t load(std::istream &stream, bool ntoh);
 
     template<>
-    bp_raw_command_t load(istream &stream, bool ntoh);
+    bp_raw_command_t load(std::istream &stream, bool ntoh);
 
     template<>
-    bp_response_t load(istream &stream, bool ntoh);
+    bp_response_t load(std::istream &stream, bool ntoh);
 
     template<>
-    bp_keep_alive_t load(istream &stream, bool ntoh);
+    bp_keep_alive_t load(std::istream &stream, bool ntoh);
 
-    ostream &operator<<(ostream &o, const ether_header_t &a);
+    std::ostream &operator<<(std::ostream &o, const ether_header_t &a);
 
-    ostream &operator<<(ostream &o, const ip_header_t &a);
+    std::ostream &operator<<(std::ostream &o, const ip_header_t &a);
 
-    ostream &operator<<(ostream &o, const udp_header_t &a);
+    std::ostream &operator<<(std::ostream &o, const udp_header_t &a);
 
-    ostream &operator<<(ostream &o, const bp_header_t &a);
+    std::ostream &operator<<(std::ostream &o, const bp_header_t &a);
 
-    ostream &operator<<(ostream &o, const bp_command_request_t &a);
+    std::ostream &operator<<(std::ostream &o, const bp_command_request_t &a);
 
-    ostream &operator<<(ostream &o, const bp_raw_command_t &a);
+    std::ostream &operator<<(std::ostream &o, const bp_raw_command_t &a);
 
-    ostream &operator<<(ostream &o, const bp_response_t &a);
+    std::ostream &operator<<(std::ostream &o, const bp_response_t &a);
 
-    ostream &operator<<(ostream &o, const bp_keep_alive_t &a);
+    std::ostream &operator<<(std::ostream &o, const bp_keep_alive_t &a);
 
-    ostream &operator<<(ostream &o, unique_ptr<info_t> a);
+    std::ostream &operator<<(std::ostream &o, std::unique_ptr<info_t> a);
 
-    unique_ptr<info_t> parsePacket(Packet packet);
+    std::unique_ptr<info_t> parsePacket(Packet packet);
 }

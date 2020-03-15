@@ -1,8 +1,8 @@
 #include "PacketCraft.hpp"
 
-uint16_t CalculateIPChecksum(vector<uint8_t> buff) {
-    unsigned long sum = 0;
-    const uint16_t *ip1 = (uint16_t *) buff.data();
+uint16_t CalculateIPChecksum(std::vector<uint8_t> buff) {
+    uint32_t sum = 0;
+    const uint16_t *ip1 = reinterpret_cast<uint16_t *> (buff.data());
     size_t hdr_len = buff.size();
     while (hdr_len > 1) {
         sum += *ip1++;
@@ -17,10 +17,11 @@ uint16_t CalculateIPChecksum(vector<uint8_t> buff) {
     return (~sum);
 }
 
-uint16_t CalculateUDPChecksum(vector<uint8_t> buff, uint32_t srcAddr, uint32_t dstAddr) {
-    auto *buf = (uint16_t *) buff.data();
+uint16_t CalculateUDPChecksum(std::vector<uint8_t> buff, uint32_t srcAddr, uint32_t dstAddr) {
+    auto *buf = reinterpret_cast<uint16_t *> (buff.data());
     size_t len = buff.size();
-    auto *ip_src = (uint16_t *) &srcAddr, *ip_dst = (uint16_t *) &dstAddr;
+    auto *ip_src = reinterpret_cast<uint16_t *> (&srcAddr);
+    auto *ip_dst = reinterpret_cast<uint16_t *> (&dstAddr);
     uint32_t sum = 0;
 
     while (len > 1) {
@@ -48,12 +49,13 @@ uint16_t CalculateUDPChecksum(vector<uint8_t> buff, uint32_t srcAddr, uint32_t d
     return ((uint16_t) (~sum));
 }
 
-vector<uint8_t>
-CraftUDPPacket(const uint32_t srcAddr, const uint32_t dstAddr, uint16_t srcPort, uint16_t dstPort, vector<uint8_t> payload,
-               vector<uint8_t> srcMac, vector<uint8_t> dstMac) {
-    ether_header_t ether_header{};
-    ip_header_t ip_header{};
-    udp_header_t udp_header{};
+std::vector<uint8_t>
+CraftUDPPacket(const uint32_t srcAddr, const uint32_t dstAddr, uint16_t srcPort, uint16_t dstPort,
+               std::vector<uint8_t> payload,
+               std::vector<uint8_t> srcMac, std::vector<uint8_t> dstMac) {
+    PacketParse::ether_header_t ether_header{};
+    PacketParse::ip_header_t ip_header{};
+    PacketParse::udp_header_t udp_header{};
 
     uint16_t udp_len = (uint16_t) payload.size() + (uint16_t) sizeof(udp_header);
     udp_header.length = htons(udp_len);
@@ -82,10 +84,10 @@ CraftUDPPacket(const uint32_t srcAddr, const uint32_t dstAddr, uint16_t srcPort,
     auto ip_ptr = reinterpret_cast<unsigned char *>(&ip_header);
     auto udp_ptr = reinterpret_cast<unsigned char *>(&udp_header);
 
-    vector<uint8_t> tempIP(ip_ptr, ip_ptr + sizeof(ip_header));
+    std::vector<uint8_t> tempIP(ip_ptr, ip_ptr + sizeof(ip_header));
     ip_header.checksum = CalculateIPChecksum(tempIP);
 
-    vector<uint8_t> tempUDP(udp_ptr, udp_ptr + sizeof(udp_header));
+    std::vector<uint8_t> tempUDP(udp_ptr, udp_ptr + sizeof(udp_header));
     tempUDP.insert(tempUDP.end(), payload.begin(), payload.end());
     udp_header.checksum = CalculateUDPChecksum(tempUDP, ip_header.src_addr, ip_header.dst_addr);
 

@@ -5,8 +5,6 @@
 #include <iostream>
 #endif
 
-using namespace std;
-
 #ifdef __unix__
 
 int main() {

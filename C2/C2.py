@@ -20,7 +20,7 @@ RAW_COMMAND = MAGIC_BYTES + b'\x02\x01'
 
 def socket_listen(targets, pipe):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_address = ('172.16.245.1', 1337)
+    server_address = ('192.168.176.1', 1337)
     sock.bind(server_address)
     target_cmds = {}
     target_responses = {}

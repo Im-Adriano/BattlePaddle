@@ -5,5 +5,5 @@
 /.vs
 /out/build/x86-Release
 /CMakeSettings.json
-/WinDivert/x86/WinDivert64.sys
+/external/WinDivert/x86/WinDivert64.sys
 /x86-Release

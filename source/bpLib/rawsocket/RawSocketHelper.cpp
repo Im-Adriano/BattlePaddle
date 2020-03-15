@@ -1,7 +1,5 @@
 #include "RawSocketHelper.hpp"
 
-using namespace std;
-
 #ifdef __unix__
 
 int RawSocketHelper::getInterfaceIndexAndInfo(const char *inter) {
@@ -18,7 +16,7 @@ int RawSocketHelper::getInterfaceIndexAndInfo(const char *inter) {
         return -1;
     }
     interfaceIndex = ifr.ifr_ifindex;
-    macAddress = vector<uint8_t>(macIfr.ifr_hwaddr.sa_data, macIfr.ifr_hwaddr.sa_data + 6);
+    macAddress = std::vector<uint8_t>(macIfr.ifr_hwaddr.sa_data, macIfr.ifr_hwaddr.sa_data + 6);
     printf("Interface uses MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
            macAddress[0], macAddress[1], macAddress[2], macAddress[3], macAddress[4], macAddress[5]);
     return 0;
@@ -75,11 +73,11 @@ int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
         return -1;
     }
     socklen_t addrLen = sizeof(addrOut);
-    if (connect(handle, (sockaddr *) &addrOut, addrLen) != 0) {
+    if (connect(handle, reinterpret_cast<sockaddr *>(&addrOut), addrLen) != 0) {
         perror("Connecting failed:");
         return -1;
     }
-    if (getsockname(handle, (sockaddr *) &addrOut, &addrLen) != 0) {
+    if (getsockname(handle, reinterpret_cast<sockaddr *>(&addrOut), &addrLen) != 0) {
         perror("Get socket name failed:");
         return -1;
     }
@@ -91,8 +89,8 @@ int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
         if (ifa->ifa_addr && AF_INET == ifa->ifa_addr->sa_family) {
             auto *inaddr = (struct sockaddr_in *) ifa->ifa_addr;
             if (inaddr->sin_addr.s_addr == ((struct sockaddr_in *) &addrOut)->sin_addr.s_addr && ifa->ifa_name) {
-                cout << "Using interface " << ifa->ifa_name << " to bind to." << endl;
-                cout << "Interface uses IP: " << source_address << endl;
+                std::cout << "Using interface " << ifa->ifa_name << " to bind to." << std::endl;
+                std::cout << "Interface uses IP: " << source_address << std::endl;
                 ipAddress = ((struct sockaddr_in *) &addrOut)->sin_addr.s_addr;
                 getInterfaceIndexAndInfo(ifa->ifa_name);
             }
@@ -102,7 +100,7 @@ int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
     return 0;
 }
 
-vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
+std::vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
     arp arpReq;
     uint32_t networkTargetIP = htonl(targetIP);
     memcpy(arpReq.sender_mac, macAddress.data(), 6);
@@ -111,7 +109,7 @@ vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
     memcpy(arpReq.target_ip, &networkTargetIP, 4);
 
     auto arpReq_ptr = reinterpret_cast<uint8_t *>(&arpReq);
-    vector buf(arpReq_ptr, arpReq_ptr + sizeof(arpReq));
+    std::vector buf(arpReq_ptr, arpReq_ptr + sizeof(arpReq));
 
     struct sockaddr_ll socket_address{};
     memcpy(socket_address.sll_addr, macAddress.data(), 6);
@@ -125,7 +123,7 @@ vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
     socket_address.sll_addr[7] = 0x00;
     if (sendto(sockFd, buf.data(), buf.size(), 0, (struct sockaddr *) &socket_address, sizeof(socket_address)) < 0) {
         perror("Send arp failed: ");
-        return vector<uint8_t>();
+        return std::vector<uint8_t>();
     }
 
     int attempts = 0;
@@ -135,21 +133,21 @@ vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
         if (attempts > 5) {
             if (sendto(sockFd, buf.data(), buf.size(), 0, (struct sockaddr *) &socket_address, sizeof(socket_address)) < 0) {
                 perror("Send arp failed: ");
-                return vector<uint8_t>();
+                return std::vector<uint8_t>();
             }
         }
         int length = recv(sockFd, recvBuf, 60, 0);
         if (length < 0) {
             if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
                 perror("Receive arp failed:");
-                return vector<uint8_t>();
+                return std::vector<uint8_t>();
             }
         }
         memcpy(&arpResp, recvBuf, sizeof(arpResp));
         if (arpResp.type == htons(0x0806)) {
             if (arpResp.opcode == htons(0x0002)) {
                 if (memcmp(&arpResp.target_ip, &networkTargetIP, 4) != 0) {
-                    return vector<uint8_t>(arpResp.sender_mac, arpResp.sender_mac + 6);
+                    return std::vector<uint8_t>(arpResp.sender_mac, arpResp.sender_mac + 6);
                 }
             }
         }
@@ -191,10 +189,10 @@ int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
     char buffer[32];
     errno_t error;
 
-    pAdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
+    pAdapterInfo = reinterpret_cast<IP_ADAPTER_INFO*>(malloc(sizeof(IP_ADAPTER_INFO)));
     if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
         free(pAdapterInfo);
-        pAdapterInfo = (IP_ADAPTER_INFO*)malloc(ulOutBufLen);
+        pAdapterInfo = reinterpret_cast<IP_ADAPTER_INFO*>(malloc(ulOutBufLen));
         if (pAdapterInfo == NULL) {
             printf("Error allocating memory needed to call GetAdaptersinfo\n");
             return 1;
@@ -206,14 +204,13 @@ int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
         while (pAdapter) {
             if (pAdapter->ComboIndex == bestInterface) {
                 ipAddress = pAdapter->IpAddressList.Context;
-                cout << "Using interface " << pAdapter->AdapterName << " to bind to." << endl;
-                cout << "Interface uses IP: " << pAdapter->IpAddressList.IpAddress.String << endl;
+                std::cout << "Using interface " << pAdapter->AdapterName << " to bind to." << std::endl;
+                std::cout << "Interface uses IP: " << pAdapter->IpAddressList.IpAddress.String << std::endl;
                 break;
             }
             pAdapter = pAdapter->Next;
         }
-    }
-    else {
+    } else {
         printf("GetAdaptersInfo failed with error: %d\n", dwRetVal);
     }
 

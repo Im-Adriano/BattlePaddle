@@ -12,18 +12,15 @@
 #include <vector>
 #include <iomanip>
 #include <windows.h>
-#include "WinDivert\windivert.h"
+#include "windivert.h"
 #include "RawSocketHelper.hpp"
 #define ntohs(x) WinDivertHelperNtohs(x)
 #define ntohl(x) WinDivertHelperNtohl(x)
 #define htons(x) WinDivertHelperHtons(x)
 #define htonl(x) WinDivertHelperHtonl(x)
 #endif
-using namespace std;
 
-typedef vector<uint8_t> Packet;
-#define HEX(x) setw(2) << setfill('0') << hex << (int)( x )
-
+typedef std::vector<uint8_t> Packet;
 
 class RawSocket {
     static const int PACKET_SIZE = 65535;
@@ -36,7 +33,7 @@ private:
 public:
 #ifdef __unix__
 
-    explicit RawSocket(const string &intName, bool debug = false);
+explicit RawSocket(const std::string &intName, bool debug = false);
 
     explicit RawSocket(uint32_t IP, bool debug = false);
 
@@ -54,9 +51,9 @@ public:
 
     uint32_t getIP();
 
-    vector<uint8_t> getMac();
+    std::vector<uint8_t> getMac();
 
-    vector<uint8_t> getMacOfIP(uint32_t targetIP);
+    std::vector<uint8_t> getMacOfIP(uint32_t targetIP);
 
     int receive();
 

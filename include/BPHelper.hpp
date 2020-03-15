@@ -1,30 +1,29 @@
-#include "PacketCraft.hpp"
-#include "Config.hpp"
-#include "RawSocket.hpp"
-#include "executeCommand.hpp"
-
 #include <iostream>
 #include <chrono>
 #include <thread>
 #include <functional>
 #include <mutex>
+#include <memory>
+#include <vector>
 
+#include "PacketCraft.hpp"
+#include "Config.hpp"
+#include "RawSocket.hpp"
+#include "executeCommand.hpp"
 
-using namespace PacketParse;
-using namespace std;
 
 class BPHelper {
-private:
+ private:
     RawSocket rawSocket;
 #ifdef __unix__
-    vector<uint8_t> nextHopMac;
+    std::vector<uint8_t> nextHopMac;
 #endif
     uint32_t currentCmd;
 
-public:
+ public:
     BPHelper();
 
-    int actionResponse(unique_ptr<info_t> eventInfo);
+    int actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo);
 
     void Receive();
 

@@ -1,12 +1,10 @@
 #include "RawSocket.hpp"
 
-using namespace std;
-
 #ifdef __unix__
 
 RawSocket::~RawSocket() = default;
 
-RawSocket::RawSocket(const string &intName, bool debug) : debugMode(debug) {
+RawSocket::RawSocket(const std::string &intName, bool debug) : debugMode(debug) {
     rawSocketHelper = RawSocketHelper();
     rawSocketHelper.createSocket();
     rawSocketHelper.getInterfaceIndexAndInfo(intName.c_str());
@@ -30,7 +28,7 @@ Packet RawSocket::getPacket() {
     return packet;
 }
 
-vector<uint8_t> RawSocket::getMacOfIP(uint32_t targetIP) {
+std::vector<uint8_t> RawSocket::getMacOfIP(uint32_t targetIP) {
     return rawSocketHelper.getMacOfIP(targetIP);
 }
 
@@ -47,11 +45,11 @@ int RawSocket::receive() {
     }
     packet.insert(packet.begin(), buf, buf + packetLen);
     if (debugMode) {
-        cout << "From socket: " << rawSocketHelper.sockFd << endl;
+        std::cout << "From socket: " << rawSocketHelper.sockFd << std::endl;
         for (int i = 0; i < packet.size(); i++) {
-            cout << HEX(packet.at(i)) << " ";
+            std::cout << std::hex << static_cast<int>(packet.at(i)) << " ";
         }
-        cout << endl;
+        std::cout << std::endl;
     }
 
     return 0;
@@ -64,7 +62,7 @@ int RawSocket::send(Packet dataframe) {
 
     if (dataframe.size() < 14) {
         if (debugMode) {
-            cout << "Packet must be atleast 14 bytes long" << endl;
+            std::cout << "Packet must be atleast 14 bytes long" << std::endl;
         }
     } else if (
             sendto(rawSocketHelper.sockFd, dataframe.data(), dataframe.size(), 0, (struct sockaddr *) &socket_address,
@@ -79,7 +77,7 @@ uint32_t RawSocket::getIP() {
     return rawSocketHelper.ipAddress;
 }
 
-vector<uint8_t> RawSocket::getMac() {
+std::vector<uint8_t> RawSocket::getMac() {
     return rawSocketHelper.macAddress;
 }
 
@@ -103,7 +101,7 @@ int RawSocket::receive() {
     packet.clear();
     unsigned char buf[PACKET_SIZE];
     int packetLen = 0;
-    if (!WinDivertRecv(rawSocketHelper.handle, buf, PACKET_SIZE, (UINT *)(&packetLen), &rawSocketHelper.address))
+    if (!WinDivertRecv(rawSocketHelper.handle, buf, PACKET_SIZE, reinterpret_cast<UINT *>(&packetLen), &rawSocketHelper.address))
     {
         fprintf(stderr, "warning: failed to read packet (%d)\n",
             GetLastError());
@@ -111,17 +109,17 @@ int RawSocket::receive() {
     }
     packet.insert(packet.begin(), buf, buf + packetLen);
     if (debugMode) {
-        cout << "RAW BYTES" << endl;
+        std::cout << "RAW BYTES" << std::endl;
         for (int i = 0; i < packet.size(); i++) {
-            cout << hex << (int)packet.at(i) << " ";
+            std::cout << std::hex << static_cast<int>(packet.at(i)) << " ";
         }
-        cout << endl;
+        std::cout << std::endl;
     }
     return 0;
 }
 
 int RawSocket::send(Packet dataframe) {
-    unique_ptr<WINDIVERT_ADDRESS> sendAddr = make_unique<WINDIVERT_ADDRESS>();
+    std::unique_ptr<WINDIVERT_ADDRESS> sendAddr = std::make_unique<WINDIVERT_ADDRESS>();
     if (sendAddr != nullptr) {
         sendAddr->Outbound = 1;
         if (!WinDivertSend(rawSocketHelper.handle, dataframe.data(), dataframe.size(), NULL, sendAddr.get())) {

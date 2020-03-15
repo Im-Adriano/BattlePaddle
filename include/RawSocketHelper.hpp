@@ -16,10 +16,8 @@
 #include <string.h>
 #include <windows.h>
 #include <iphlpapi.h>
-#include "WinDivert\windivert.h"
+#include "windivert.h"
 #endif
-
-using namespace std;
 
 #if __unix__
 struct arp {
@@ -42,7 +40,7 @@ public:
     int interfaceIndex;
     int sockFd;
     struct sockaddr_ll addr;
-    vector<uint8_t> macAddress;
+    std::vector<uint8_t> macAddress;
     uint32_t ipAddress;
 
     int getInterfaceIndexAndInfo(const char *inter);
@@ -57,7 +55,7 @@ public:
 
     int findOutwardFacingNIC(uint32_t destination_address);
 
-    vector<uint8_t> getMacOfIP(uint32_t targetIP);
+    std::vector<uint8_t> getMacOfIP(uint32_t targetIP);
 };
 
 #elif defined(OS_Windows)
