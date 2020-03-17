@@ -1,7 +1,7 @@
-#if defined(_WIN32) || defined(WIN32)
+#ifndef EXECUTECOMMAND_H
+#define EXECUTECOMMAND_H
 
-#ifndef MODULES_COMMAND_EXECUTECOMMAND_H_
-#define MODULES_COMMAND_EXECUTECOMMAND_H_
+#if defined(_WIN32) || defined(WIN32)
 
 #include <string>
 #include <memory>
@@ -23,8 +23,6 @@ struct CommandResult {
 
 std::unique_ptr<CommandResult> RunCommand(std::string command, std::string arguments);
 
-#endif
-
 #else
 
 #include <cstdio>
@@ -36,4 +34,5 @@ std::unique_ptr<CommandResult> RunCommand(std::string command, std::string argum
 
 std::string exec(const char *cmd);
 
+#endif
 #endif

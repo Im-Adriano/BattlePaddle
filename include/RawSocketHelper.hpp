@@ -1,3 +1,5 @@
+#ifndef RAWSOCKETHELPER_H
+#define RAWSOCKETHELPER_H
 #ifdef __unix__
 
 #include <net/ethernet.h>
@@ -71,4 +73,5 @@ class RawSocketHelper{
 
         int findOutwardFacingNIC(uint32_t destination_address);
 };
+#endif
 #endif

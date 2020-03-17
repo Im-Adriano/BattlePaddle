@@ -1,3 +1,6 @@
+#ifndef PACKETPARSE_H
+#define PACKETPARSE_H
+
 #include <iomanip>
 #include <cstring>
 #include <string>
@@ -146,3 +149,4 @@ namespace PacketParse {
 
     std::unique_ptr<info_t> parsePacket(Packet packet);
 }
+#endif

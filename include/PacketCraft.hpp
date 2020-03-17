@@ -1,3 +1,6 @@
+#ifndef PACKETCRAFT_H
+#define PACKETCRAFT_H
+
 #include <vector>
 #include <string>
 
@@ -26,3 +29,5 @@ std::vector<uint8_t> CraftUDPPacket(uint32_t srcAddr,
                                     std::vector<uint8_t> payload,
                                     std::vector<uint8_t> srcMac = std::vector<uint8_t>(),
                                     std::vector<uint8_t> dstMac = std::vector<uint8_t>());
+
+#endif

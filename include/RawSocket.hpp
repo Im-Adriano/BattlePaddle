@@ -1,3 +1,5 @@
+#ifndef RAWSOCKET_H
+#define RAWSOCKET_H
 #ifdef __unix__
 
 #include <iostream>
@@ -33,7 +35,7 @@ private:
 public:
 #ifdef __unix__
 
-explicit RawSocket(const std::string &intName, bool debug = false);
+    explicit RawSocket(const std::string &intName, bool debug = false);
 
     explicit RawSocket(uint32_t IP, bool debug = false);
 
@@ -59,3 +61,5 @@ explicit RawSocket(const std::string &intName, bool debug = false);
 
     int send(Packet dataframe);
 };
+
+#endif

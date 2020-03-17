@@ -1,3 +1,6 @@
+#ifndef BPHELPER_H
+#define BPHELPER_H
+
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -13,14 +16,14 @@
 
 
 class BPHelper {
- private:
+private:
     RawSocket rawSocket;
 #ifdef __unix__
     std::vector<uint8_t> nextHopMac;
 #endif
     uint32_t currentCmd;
 
- public:
+public:
     BPHelper();
 
     int actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo);
@@ -33,3 +36,5 @@ class BPHelper {
 
     void requestActionThread();
 };
+
+#endif
