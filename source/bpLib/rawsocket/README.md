@@ -51,6 +51,6 @@ Windows currently is only able to send Raw Packets from layer 3 and up. You are 
 ### SO why use this on windows?
  Easy, the library is still able to listen and receive packets with a firewall fully blocking traffic And it does not use pcap which is easy found. 
 
- On Linux you are responsible for the whole packet from the layer 2 header and up. Good luck. I have also developed a library to aid in packet parsing and crafting found here [source/bpLib/packet](../../packet/)
+ On Linux you are responsible for the whole packet from the layer 2 header and up. Good luck. I have also developed a library to aid in packet parsing and crafting found here [source/bpLib/packet](../../bpLib/packet/)
 
 
