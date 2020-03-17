@@ -49,7 +49,7 @@ std::vector<uint8_t> getMacOfIP(uint32_t targetIP);
 Windows currently is only able to send Raw Packets from layer 3 and up. You are unable to craft your own layer 2/3 header with this current implementation. You can only craft the layer 3 payload and up. The socket is also blocked by the firewall when attempting to send a packet.
 
 ### SO why use this on windows?
- Easy, the library is still able to listen and receive packets with a firewall fully blocking traffic and it does not use pcap which is easily found. It also allows you to create cross platform raw socket programs with minimal platform dependent code due to the abstraction layer provided by this library.  
+ Easy, the library is still able to listen and receive packets with a firewall fully blocking traffic and it does not use pcap which is easily found. It also allows you to create cross platform raw socket program with minimal platform dependent code due to the abstraction layer provided by this library.  
 
  On Linux you are responsible for the whole packet from the layer 2 header and up. Good luck. I have also developed a library to aid in packet parsing and crafting found here [source/bpLib/packet](../../bpLib/packet/)
 
