@@ -10,8 +10,8 @@
 
 #include <string>
 
-extern uint32_t C2IP;
-extern uint32_t GatewayIP;
+extern uint32_t c2Ip;
+extern uint32_t gatewayIp;
 extern bool useGateway;
 extern int requestActionInterval;
 

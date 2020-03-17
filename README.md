@@ -21,15 +21,15 @@ The dependencies are as minimal as possible:
 Edit the config file found in [source/bpLib/config/Config.cpp](./source/bpLib/config/Config.cpp)
 
 Each configuration option in that file is as followed:
-- `C2IP_EDIT` is the IP of your C2.
+- `c2IpEdit` is the IP of your C2.
   - If your C2 IP is 10.1.1.100 the line would look like:
     ```cpp
-    uint8_t C2IP_EDIT[4] = {10, 1, 1, 100};
+    uint8_t c2IpEdit[4] = {10, 1, 1, 100};
     ```
-- `GATEWAYIP_EDIT` is the IP of your this bot's gateway. Only linux uses this configuration. I am looking into alternatives to find this automatically in a way that keeps it distro agnostic.  
+- `gatewayipEdit` is the IP of your this bot's gateway. Only linux uses this configuration. I am looking into alternatives to find this automatically in a way that keeps it distro agnostic.  
   - If your Gateway IP is 10.1.1.1 the line would look like:
     ```cpp
-    uint8_t GATEWAYIP_EDIT[4] = {10, 1, 1, 1};
+    uint8_t gatewayipEdit[4] = {10, 1, 1, 1};
     ```
 - `useGateway`, once again only used for linux, tells the bot whether or not there is a hop between it and the C2. Used so the bot knows what IP to arp for.
 - `requestActionInterval` is the rate at which the bot will request a command from the C2. This is in milliseconds.
