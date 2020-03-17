@@ -1,3 +1,13 @@
+/*
+ * RawSocket
+ *
+ * Main component of the RawSocket lib.
+ * Abstracts the use of Raw Sockets away from the user as much as possible,
+ * while still giving them full control of packet manipulation.
+ *
+ * Aids the user in setting up RawSockets as easily as possible.
+ */
+
 #ifndef RAWSOCKET_H
 #define RAWSOCKET_H
 #ifdef __unix__
@@ -37,25 +47,20 @@ public:
 
     explicit RawSocket(const std::string &intName, bool debug = false);
 
-    explicit RawSocket(uint32_t IP, bool debug = false);
+    std::vector<uint8_t> getMac();
 
-    RawSocket();
+    std::vector<uint8_t> getMacOfIP(uint32_t targetIP);
 
-#elif defined(OS_Windows)
+#endif
     RawSocket(uint32_t ipAddress, bool debug = false);
     
     RawSocket();
-#endif
 
     ~RawSocket();
 
     Packet getPacket();
 
     uint32_t getIP();
-
-    std::vector<uint8_t> getMac();
-
-    std::vector<uint8_t> getMacOfIP(uint32_t targetIP);
 
     int receive();
 

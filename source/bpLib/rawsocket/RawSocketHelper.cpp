@@ -184,10 +184,6 @@ int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
     PIP_ADAPTER_INFO pAdapter = NULL;
     DWORD dwRetVal = 0;
     ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
-    struct tm newtime;
-    UINT i;
-    char buffer[32];
-    errno_t error;
 
     pAdapterInfo = reinterpret_cast<IP_ADAPTER_INFO*>(malloc(sizeof(IP_ADAPTER_INFO)));
     if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {

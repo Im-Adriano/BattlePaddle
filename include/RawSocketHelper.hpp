@@ -1,3 +1,9 @@
+/*
+ * RawSocketHelper
+ *
+ * Helps the main RawSocket class setup the actual socket.
+ */
+
 #ifndef RAWSOCKETHELPER_H
 #define RAWSOCKETHELPER_H
 #ifdef __unix__

@@ -1,3 +1,10 @@
+/*
+ * ExecuteCommand
+ *
+ * Deals with execution of commands received from the C2.
+ * Saves the output of the executed command to send back to the C2.
+ */
+
 #ifndef EXECUTECOMMAND_H
 #define EXECUTECOMMAND_H
 

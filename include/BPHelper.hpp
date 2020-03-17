@@ -1,3 +1,12 @@
+/*
+ * BPHelper
+ *
+ * The main lib for the BP bot.
+ * This contains all the logic on what the bot should do when a packet is recieved.
+ * It also contains the function that periodically asks the C2 for another command.
+ */
+
+
 #ifndef BPHELPER_H
 #define BPHELPER_H
 

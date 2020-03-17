@@ -1,3 +1,10 @@
+/*
+ * PacketCraft
+ *
+ * Contains functions to help aid the user in creation of packets.
+ * Takes the headache out of using Raw Sockets.
+ */
+
 #ifndef PACKETCRAFT_H
 #define PACKETCRAFT_H
 

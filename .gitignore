@@ -7,3 +7,9 @@
 /CMakeSettings.json
 /external/WinDivert/x86/WinDivert64.sys
 /x86-Release
+/build/
+/.vscode/
+/.idea/
+/cmake-build-debug/
+/garbage/
+/out/

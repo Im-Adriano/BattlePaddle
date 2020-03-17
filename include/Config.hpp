@@ -1,3 +1,10 @@
+/*
+ * Config
+ *
+ * Configurations for the bot.
+ * Compiled in to reduce amount of files on the target system.
+ */
+
 #ifndef CONFIG_H
 #define CONFIG_H
 

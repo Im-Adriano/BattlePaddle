@@ -1,3 +1,9 @@
+/*
+ * PacketParse
+ *
+ * Contains functions to help the user decode raw bytes off the wire.
+ */
+
 #ifndef PACKETPARSE_H
 #define PACKETPARSE_H
 
