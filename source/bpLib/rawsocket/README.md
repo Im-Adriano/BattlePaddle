@@ -1,7 +1,7 @@
 # RawSocket Library
 
 ## What is it?
- Raw Sockets of course! But really is abstraction/simplification of raw sockets on both windows and linux using their respective technologies. Each built on top of minimal dependencies to allow for ease of deployment to many systems.
+ Raw Sockets of course! But really it is an abstraction/simplification of raw sockets on both windows and linux using their respective technologies. Each built on top of minimal dependencies to allow for ease of deployment to many systems.
 
  ## What do I get with this library?
 
