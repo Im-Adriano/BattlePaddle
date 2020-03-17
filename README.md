@@ -4,7 +4,7 @@ This is a work in progress.
 
 ## What is it?
 
-BattlePaddle is a C2 bot with some extra functionality
+BattlePaddle is a Raw Socket C2 bot for both Linux and Windows.
 
 
 ## Dependencies?
