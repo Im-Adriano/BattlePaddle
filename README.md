@@ -56,7 +56,7 @@ Each configuration option in that file is as followed:
 
 ## RawSocket Library
 
-Go to [source/bpLib/rawsocket/README.md](/source/bpLib/rawsocket/README.md) to read more.
+Go to [source/bpLib/rawsocket](/source/bpLib/rawsocket) to read more.
 
 ## Alpha Timeline
 - [X] Setup Raw sockets on linux
