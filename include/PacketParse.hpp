@@ -80,14 +80,14 @@ namespace PacketParse {
         uint32_t command_num{}; // For metrics
         uint32_t host_ip{};
         uint16_t cmd_len{};
-        uint8_t raw_command[500]{}; // The custom command
+        uint8_t raw_command[1200]{}; // The custom command
     };
 
     struct bp_response_t {
         uint32_t command_num{}; // For metrics
         uint32_t host_ip{}; // When relaying becomes a thing
         uint16_t data_len{};
-        uint8_t data[500]{}; // Other metrics about command ran or health of host
+        uint8_t data[1200]{}; // Other metrics about command ran or health of host
     };
 
     struct bp_keep_alive_t {

