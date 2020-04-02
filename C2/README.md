@@ -32,6 +32,8 @@ stage
 execute <Name you entered above>
 ```
 
+\*NOTE\* Commands for the different platforms need to be formed a little different. For linux you can type any command you could execute on the command line. On Windows you specify a .exe to run. For example 'calc.exe' to spawn Calculator. To run a command in powershell you would do 'powershell.exe -c "Command to run here"'. If you do not include the .exe the program will not be able to run what you gave it. 
+
 ### Creating and targeting groups
 
 ```python
