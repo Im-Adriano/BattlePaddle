@@ -35,6 +35,8 @@ Each configuration option in that file is as followed:
 - `requestActionInterval` is the rate at which the bot will request a command from the C2. This is in milliseconds.
   
 ### Compilation
+Both Windows and Linux create a shared library such as a .SO or .DLL and an executable. You only need to deploy and run one of them. 
+
 - Linux
   - The build systems I use include:
     - cmake
@@ -57,6 +59,10 @@ Each configuration option in that file is as followed:
 ## RawSocket Library
 
 Go to [source/bpLib/rawsocket](/source/bpLib/rawsocket) to read more.
+
+## C2
+
+Go to [C2](C2) to read more.
 
 ## Alpha Timeline
 - [X] Setup Raw sockets on linux
