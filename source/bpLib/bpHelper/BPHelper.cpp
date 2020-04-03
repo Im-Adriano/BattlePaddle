@@ -148,9 +148,15 @@ void BPHelper::Receive() {
         Packet packet = rawSocket.getPacket();
         if (!packet.empty()) {
             std::unique_ptr<PacketParse::info_t> info = PacketParse::parsePacket(packet);
+#ifdef __unix__
+            if (info->bpHeader.magic_bytes == PacketParse::MAGIC_BYTES && info->ipHeader.dst_addr == ntohl(rawSocket.getIP())){
+                actionResponse(move(info));
+            }
+#elif defined(_WIN32) || defined(WIN32)
             if (info->bpHeader.magic_bytes == PacketParse::MAGIC_BYTES) {
                 actionResponse(move(info));
             }
+#endif
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
