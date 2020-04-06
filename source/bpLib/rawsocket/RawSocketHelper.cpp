@@ -103,6 +103,16 @@ int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
 std::vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
     arp arpReq;
     uint32_t networkTargetIP = htonl(targetIP);
+    uint8_t dst_mac[6]{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    memcpy(arpReq.dst_mac, dst_mac, 6);
+    arpReq.type = htons(0x0806);
+    arpReq.hardware_type = htons(0x0001);
+    arpReq.protocol_type = htons(0x0800);
+    arpReq.hardware_len = 0x06;
+    arpReq.protocol_len = 0x04;
+    arpReq.opcode = htons(0x0001);
+    uint8_t target_mac[6]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    memcpy(arpReq.target_mac, target_mac, 6);
     memcpy(arpReq.sender_mac, macAddress.data(), 6);
     memcpy(arpReq.src_mac, macAddress.data(), 6);
     memcpy(arpReq.sender_ip, &ipAddress, 4);

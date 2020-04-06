@@ -29,17 +29,17 @@
 
 #if __unix__
 struct arp {
-    uint8_t dst_mac[6]{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    uint8_t dst_mac[6]{};
     uint8_t src_mac[6]{};
-    uint16_t type = htons(0x0806);
-    uint16_t hardware_type = htons(0x0001);
-    uint16_t protocol_type = htons(0x0800);
-    uint8_t hardware_len = 0x06;
-    uint8_t protocol_len = 0x04;
-    uint16_t opcode = htons(0x0001);
+    uint16_t type{};
+    uint16_t hardware_type{};
+    uint16_t protocol_type{};
+    uint8_t hardware_len{};
+    uint8_t protocol_len{};
+    uint16_t opcode{};
     uint8_t sender_mac[6]{};
     uint8_t sender_ip[4]{};
-    uint8_t target_mac[6]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint8_t target_mac[6]{};
     uint8_t target_ip[4]{};
 };
 
