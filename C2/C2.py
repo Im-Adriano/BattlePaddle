@@ -429,4 +429,4 @@ if __name__ == '__main__':
                 toolbarStr = f'Name: {stage_command_name} Target: {list(stage_target)} Commands: {stage_commands}'
     except (KeyboardInterrupt, EOFError):
         print(f.renderText('GG'))
-        p.kill()
+        p.terminate()
