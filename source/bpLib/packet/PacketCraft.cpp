@@ -59,7 +59,7 @@ CraftUDPPacket(const uint32_t srcAddr, const uint32_t dstAddr, uint16_t srcPort,
 
     uint16_t udp_len = (uint16_t) payload.size() + (uint16_t) sizeof(udp_header);
     udp_header.length = htons(udp_len);
-    udp_header.dst_port = htons(dstport);
+    udp_header.dst_port = htons(dstPort);
     udp_header.src_port = htons(srcPort);
     udp_header.checksum = htons(0xFFFF);
 
