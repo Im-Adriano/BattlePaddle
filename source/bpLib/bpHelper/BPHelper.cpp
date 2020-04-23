@@ -10,7 +10,7 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
     switch (eventInfo->bpHeader.header_type) {
         case 0x02: {
             // execute command then respond
-            std::cout << "Received a Command to Execute" << std::endl;
+            //std::cout << "Received a Command to Execute" << std::endl;
 #if defined(_WIN32) || defined(WIN32)
             std::string del = " ";
             size_t found = rawCommand.find(del);
@@ -82,14 +82,14 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
         }
         case 0x04: {
             // keep alive to eventually inform the bot if it needs to switch it's transmission method.
-            std::cout << "Received a Keep Alive" << std::endl;
+            //std::cout << "Received a Keep Alive" << std::endl;
             if (eventInfo->bpKeepAlive.command_num == currentCmd) {
                 currentCmd++;
             }
             return 1;
         }
         default: {
-            std::cout << "Not a Command or Keep Alive" << std::endl;
+            //std::cout << "Not a Command or Keep Alive" << std::endl;
             return -1;
         }
     }
