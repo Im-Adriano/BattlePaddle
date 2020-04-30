@@ -102,6 +102,8 @@ void BPHelper::requestAction() {
     bpHeader.header_type = 0x01;
     bp_command_request_header.target_OS = 0x01;
     bp_command_request_header.command_num = htonl(currentCmd);
+    bp_command_request_header.host_ip = rawSocket.getIP();
+
 
     auto bp_header_ptr = reinterpret_cast<unsigned char *>(&bpHeader);
     auto bp_ptr = reinterpret_cast<unsigned char *>(&bp_command_request_header);

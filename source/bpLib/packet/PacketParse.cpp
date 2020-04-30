@@ -166,6 +166,7 @@ namespace PacketParse {
         stream.read(reinterpret_cast<char*>(&header), sizeof(header));
         if (ntoh) {
             header.command_num = ntohl(header.command_num);
+            header.host_ip = ntohl(header.host_ip);
         }
         return header;
     }
