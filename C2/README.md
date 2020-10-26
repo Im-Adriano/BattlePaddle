@@ -1,6 +1,8 @@
 
 # C2
 
+Being deprecated soon, new C2 being developed.
+
 ## What is it?
 
 A C2 for BP...
