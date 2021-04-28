@@ -101,9 +101,9 @@ void BPHelper::requestAction() {
     PacketParse::bp_command_request_t bp_command_request_header{};
     bpHeader.header_type = 0x01;
 #if defined(_WIN32) || defined(WIN32)
-    bp_command_request_header.target_OS = 0x01;
-#else
     bp_command_request_header.target_OS = 0x02;
+#else
+    bp_command_request_header.target_OS = 0x01;
 #endif
 
     bp_command_request_header.command_num = htonl(currentCmd);
