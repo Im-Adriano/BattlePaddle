@@ -103,7 +103,7 @@ int RawSocket::receive() {
     int packetLen = 0;
     if (!WinDivertRecv(rawSocketHelper.handle, buf, PACKET_SIZE, reinterpret_cast<UINT *>(&packetLen), &rawSocketHelper.address))
     {
-        fprintf(stderr, "warning: failed to read packet (%d)\n",
+        fprintf(stderr, "warning: failed to read packet (%lu)\n",
             GetLastError());
         return -1;
     }
@@ -123,7 +123,7 @@ int RawSocket::send(Packet dataframe) {
     if (sendAddr != nullptr) {
         sendAddr->Outbound = 1;
         if (!WinDivertSend(rawSocketHelper.handle, dataframe.data(), dataframe.size(), NULL, sendAddr.get())) {
-            fprintf(stderr, "warning: failed to send packet (%d)\n",
+            fprintf(stderr, "warning: failed to send packet (%lu)\n",
                 GetLastError());
             return -1;
         }

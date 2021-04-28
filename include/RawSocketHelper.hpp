@@ -67,17 +67,18 @@ public:
 };
 
 #elif defined(OS_Windows)
-class RawSocketHelper{
-    public: 
-        HANDLE handle;
-        INT16 priority = 0;
-        WINDIVERT_ADDRESS address;
-        const char* err_str;
-        uint32_t ipAddress;
+class RawSocketHelper
+{
+public:
+	HANDLE handle;
+	INT16 priority = 0;
+	WINDIVERT_ADDRESS address;
+	const char* err_str;
+	uint32_t ipAddress;
 
-        int setup();
+	int setup();
 
-        int findOutwardFacingNIC(uint32_t destination_address);
+	int findOutwardFacingNIC(uint32_t destination_address);
 };
 #endif
 #endif

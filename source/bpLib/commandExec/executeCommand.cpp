@@ -4,8 +4,6 @@
 
 std::unique_ptr<CommandResult> RunCommand(std::string command, std::string arguments) {
     auto result = std::make_unique<CommandResult>();
-    uint64_t startTime;
-    uint64_t endTime;
     bool commandError = false;
     // Get command from Action object
 
@@ -26,107 +24,107 @@ std::unique_ptr<CommandResult> RunCommand(std::string command, std::string argum
     // Must use CreateProcess to capture IO
     STARTUPINFOW si;  // StartupInfo Struct to initialize with the process being created
     PROCESS_INFORMATION pi;  // ProcessInformation struct
-    HANDLE childStdOut_Rd = NULL;  // Handle for StdOut of new process
-    HANDLE childStdOut_Wr = NULL;
-    HANDLE childStdErr_Rd = NULL;  // Handle for StdErr of new process
-    HANDLE childStdErr_Wr = NULL;
+    HANDLE child_std_out_rd = nullptr;  // Handle for StdOut of new process
+    HANDLE child_std_out_wr = nullptr;
+    HANDLE child_std_err_rd = nullptr;  // Handle for StdErr of new process
+    HANDLE child_std_err_wr = nullptr;
 
     // Handle of parent's StdOut so we can write directly to console
     HANDLE parentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     bool bSuccess = false;
 
-    SECURITY_ATTRIBUTES saAttr;
-    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-    saAttr.bInheritHandle = TRUE;
-    saAttr.lpSecurityDescriptor = NULL;
+    SECURITY_ATTRIBUTES sa_attr;
+    sa_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa_attr.bInheritHandle = TRUE;
+    sa_attr.lpSecurityDescriptor = nullptr;
 
     // Create pipe for the child process Std Out
-    if (!CreatePipe(&childStdOut_Rd, &childStdOut_Wr, &saAttr, 0))
-        printf("CreatePipe StdOut failed (%d).\n", GetLastError());
+    if (!CreatePipe(&child_std_out_rd, &child_std_out_wr, &sa_attr, 0))
+        printf("CreatePipe StdOut failed (%lu).\n", GetLastError());
 
     // Make sure the read handle to the pipe for Std Out is NOT inherited
-    if (!SetHandleInformation(childStdOut_Rd, HANDLE_FLAG_INHERIT, 0))
-        printf("SetHandleInformation failed (%d).\n", GetLastError());
+    if (!SetHandleInformation(child_std_out_rd, HANDLE_FLAG_INHERIT, 0))
+        printf("SetHandleInformation failed (%lu).\n", GetLastError());
 
     // Create pipe for the child process Std Err
-    if (!CreatePipe(&childStdErr_Rd, &childStdErr_Wr, &saAttr, 0))
-        printf("CreatePipe StdErr failed (%d).\n", GetLastError());
+    if (!CreatePipe(&child_std_err_rd, &child_std_err_wr, &sa_attr, 0))
+        printf("CreatePipe StdErr failed (%lu).\n", GetLastError());
 
     // Make sure the read handle to the pipe for Std Err is NOT inherited
-    if (!SetHandleInformation(childStdErr_Rd, HANDLE_FLAG_INHERIT, 0))
-        printf("SetHandleInformation failed (%d).\n", GetLastError());
+    if (!SetHandleInformation(child_std_err_rd, HANDLE_FLAG_INHERIT, 0))
+        printf("SetHandleInformation failed (%lu).\n", GetLastError());
 
     ZeroMemory(&pi, sizeof(pi));
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
-    si.hStdOutput = childStdOut_Wr;  // Pass standard output from process to handle
-    si.hStdError = childStdErr_Wr;  // Pass standard error from process to handle
+    si.hStdOutput = child_std_out_wr;  // Pass standard output from process to handle
+    si.hStdError = child_std_err_wr;  // Pass standard error from process to handle
     si.dwFlags |= STARTF_USESTDHANDLES;
 
-    startTime = GetTimeOfDay();
+    const uint64_t start_time = GetTimeOfDay();
 
-    bSuccess = CreateProcessW(NULL,  // Name of executable (CreateProcess finds the path)
+    bSuccess = CreateProcessW(nullptr,  // Name of executable (CreateProcess finds the path)
                               wcommand,  // No Args
-                              NULL,  // Process Handle not inheritable
-                              NULL,  // Thread Handle not inheritable
+                              nullptr,  // Process Handle not inheritable
+                              nullptr,  // Thread Handle not inheritable
                               TRUE,  // Set handle inheritance to TRUE, tells Windows to attached the specified handles from the si struct
                               0,  // No Creation flags
-                              NULL,  // Use parent's environment
-                              NULL,  // Use parent's working directory
+                              nullptr,  // Use parent's environment
+                              nullptr,  // Use parent's working directory
                               &si,  // Pointer to STARTUPINFO struct
                               &pi);  // Pointer to PROCESS_INFORMATION struct
 
     WaitForSingleObject(pi.hProcess, MAX_WAIT);
-    endTime = GetTimeOfDay();
+    const uint64_t end_time = GetTimeOfDay();
 
-    std::string childOut = "";
-    std::string childErr = "";
+    std::string child_out;
+    std::string child_err;
 
     if (!bSuccess) {
-        printf("CreateProcess failed (%d).\n", GetLastError());
-        childErr = "CreateProcess failed";
+        printf("CreateProcess failed (%lu).\n", GetLastError());
+        child_err = "CreateProcess failed";
     }
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
-    delete wcommand;
+    delete[] wcommand;
 
     // Pipe error resolved with the following documentation
     // https://msdn.microsoft.com/en-gb/library/windows/desktop/aa365782(v=vs.85).aspx
-    CloseHandle(childStdOut_Wr);
-    CloseHandle(childStdErr_Wr);
+    CloseHandle(child_std_out_wr);
+    CloseHandle(child_std_err_wr);
 
     DWORD dwRead;  // Don't need dwWritten due to not writing to a stream
     CHAR chBuf[BUFLEN];
-    size_t sizeChBuf = sizeof(chBuf);
-    ZeroMemory(&chBuf, sizeChBuf);
+    const size_t size_ch_buf = sizeof(chBuf);
+    ZeroMemory(&chBuf, size_ch_buf);
 
     // Read StdOut from child process
     bSuccess = false;
     for (;;) {
-        bSuccess = ReadFile(childStdOut_Rd, chBuf, BUFLEN, &dwRead, NULL);
+        bSuccess = ReadFile(child_std_out_rd, chBuf, BUFLEN, &dwRead, nullptr);
         if (!bSuccess || dwRead == 0)
             break;  // Break if there's nothing left, ReadFile will probably return error 109 (ERROR_BROKEN_PIPE)
 
-        childOut.append(chBuf, dwRead);
+        child_out.append(chBuf, dwRead);
     }
 
     // Read StdErr from child process
     bSuccess = false;
     for (;;) {
-        bSuccess = ReadFile(childStdErr_Rd, chBuf, BUFLEN, &dwRead, NULL);
+        bSuccess = ReadFile(child_std_err_rd, chBuf, BUFLEN, &dwRead, nullptr);
         if (!bSuccess || dwRead == 0)
             break;
 
-        childErr.append(chBuf, dwRead);
+        child_err.append(chBuf, dwRead);
     }
 
-    result->std_output = childOut;
-    result->std_error = childErr;
-    result->start_time = std::to_string(startTime);
-    result->end_time = std::to_string(endTime);
+    result->std_output = child_out;
+    result->std_error = child_err;
+    result->start_time = std::to_string(start_time);
+    result->end_time = std::to_string(end_time);
 
     // Make Command Response Object to return
-    if (childErr != "")
+    if (child_err != "")
         result->error = true;
 
     return result;

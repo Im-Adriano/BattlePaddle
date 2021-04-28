@@ -167,7 +167,8 @@ std::vector<uint8_t> RawSocketHelper::getMacOfIP(uint32_t targetIP) {
 
 #elif defined(OS_Windows)
 
-int RawSocketHelper::setup() {
+int RawSocketHelper::setup()
+{
     handle = WinDivertOpen("inbound", WINDIVERT_LAYER_NETWORK, priority, WINDIVERT_FLAG_SNIFF | WINDIVERT_FLAG_FRAGMENTS);
     if (handle == INVALID_HANDLE_VALUE)
     {
@@ -178,7 +179,7 @@ int RawSocketHelper::setup() {
             fprintf(stderr, "error: invalid filter \"%s\"\n", err_str);
             return -1;
         }
-        fprintf(stderr, "error: failed to open the WinDivert device (%d)\n",
+        fprintf(stderr, "error: failed to open the WinDivert device (%lu)\n",
             GetLastError());
         return -1;
     }
@@ -217,7 +218,7 @@ int RawSocketHelper::findOutwardFacingNIC(uint32_t destination_address) {
             pAdapter = pAdapter->Next;
         }
     } else {
-        printf("GetAdaptersInfo failed with error: %d\n", dwRetVal);
+        printf("GetAdaptersInfo failed with error: %lu\n", dwRetVal);
     }
 
     if (pAdapterInfo)
